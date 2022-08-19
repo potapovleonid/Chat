@@ -7,7 +7,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ServerGUI extends JFrame implements ActionListener{
+public class ServerGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler {
 
     private static final int POS_X = 1000;
     private static final int POS_Y = 550;
@@ -29,8 +29,9 @@ public class ServerGUI extends JFrame implements ActionListener{
     }
 
     private ServerGUI(){
+        Thread.setDefaultUncaughtExceptionHandler(this);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setBounds(POS_X, POS_X, WIDTH, HEIGHT);
+        setBounds(POS_X, POS_Y, WIDTH, HEIGHT);
         setResizable(false);
         setTitle("Chat server");
         setAlwaysOnTop(true);
@@ -53,5 +54,16 @@ public class ServerGUI extends JFrame implements ActionListener{
             chatServer.stop();
         } else
             throw new RuntimeException("Unknown source: " + source);
+    }
+
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        e.printStackTrace();
+        String msg;
+        StackTraceElement[] ste = e.getStackTrace();
+        msg = "Exception in thread " + t.getName() + " " + e.getClass().getCanonicalName() +
+                ": " + e.getMessage() + "\n\t" + ste[0];
+        JOptionPane.showMessageDialog(null, msg, "Exception", JOptionPane.ERROR_MESSAGE);
+        System.exit(1);
     }
 }
