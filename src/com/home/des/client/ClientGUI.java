@@ -50,7 +50,9 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         JScrollPane scrollLog = new JScrollPane(log);
         JScrollPane scrollUsers = new JScrollPane(userList);
 
-        scrollUsers.setPreferredSize(new Dimension(100, HEIGHT));
+        scrollUsers.setPreferredSize(new Dimension(100, 0));
+
+        cbAlwaysOnTop.addActionListener(this);
 
         panelTop.add(tfIPAddress);
         panelTop.add(tfPort);
@@ -67,13 +69,19 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         add(panelTop, BorderLayout.NORTH);
         add(panelBottom, BorderLayout.SOUTH);
 
+        log.setEditable(false);
+
         setVisible(true);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
-
+        if (source == cbAlwaysOnTop){
+            setAlwaysOnTop(cbAlwaysOnTop.isSelected());
+        } else {
+            throw new RuntimeException("Unknown source: " + source);
+        }
     }
 
     @Override
