@@ -6,6 +6,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler {
 
@@ -89,14 +91,23 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         }
     }
 
+    public void showException(Thread t, Throwable e){
+        String msg;
+        StackTraceElement[] ste = e.getStackTrace();
+        if (ste.length == 0){
+            msg = "Empty Stacktrace";
+        } else {
+            msg = "Exception in thread " + t.getName() + " " +
+                    e.getClass().getCanonicalName() + ": " +
+                    e.getMessage() + "\n\t" + ste[0];
+        }
+        JOptionPane.showMessageDialog(null, msg, "Exception", JOptionPane.ERROR_MESSAGE);
+    }
+
     @Override
     public void uncaughtException(Thread t, Throwable e) {
         e.printStackTrace();
-        String msg;
-        StackTraceElement[] ste = e.getStackTrace();
-        msg = "Exception in thread " + t.getName() + " " + e.getClass().getCanonicalName() +
-                ": " + e.getMessage() + "\n\t" + ste[0];
-        JOptionPane.showMessageDialog(null, msg, "Exception", JOptionPane.ERROR_MESSAGE);
+        showException(t, e);
         System.exit(1);
     }
 
@@ -104,10 +115,31 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         String msg = tfMessage.getText();
         String user = tfLogin.getText();
         if (msg.equals("")) return;
-        log.append(user + ": " + msg + "\n");
         tfMessage.setText("");
         tfMessage.requestFocusInWindow();
-
+        putLog(String.format("%s: %s", user, msg));
+        writeMsgToLog(msg, user);
     }
+
+    public void putLog(String msg){
+        if ("".equals(msg)) return;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                log.append(msg + "\n");
+                log.setCaretPosition(log.getDocument().getLength());
+            }
+        });
+    }
+
+    public void writeMsgToLog(String msg, String username){
+        try (FileWriter out = new FileWriter("log.txt", true)){
+            out.write(username + ": " + msg + "\n");
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }
