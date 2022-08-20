@@ -52,7 +52,10 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
         scrollUsers.setPreferredSize(new Dimension(100, 0));
 
+//      Adding listeners for buttons and objects
         cbAlwaysOnTop.addActionListener(this);
+        btnSend.addActionListener(this);
+        tfMessage.addActionListener(this);
 
         panelTop.add(tfIPAddress);
         panelTop.add(tfPort);
@@ -77,8 +80,10 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
-        if (source == cbAlwaysOnTop){
+        if (source == cbAlwaysOnTop) {
             setAlwaysOnTop(cbAlwaysOnTop.isSelected());
+        } else if (source == btnSend || source == tfMessage) {
+            sendMessage();
         } else {
             throw new RuntimeException("Unknown source: " + source);
         }
@@ -93,6 +98,16 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
                 ": " + e.getMessage() + "\n\t" + ste[0];
         JOptionPane.showMessageDialog(null, msg, "Exception", JOptionPane.ERROR_MESSAGE);
         System.exit(1);
+    }
+
+    public void sendMessage(){
+        String msg = tfMessage.getText();
+        String user = tfLogin.getText();
+        if (msg.equals("")) return;
+        log.append(user + ": " + msg + "\n");
+        tfMessage.setText("");
+        tfMessage.requestFocusInWindow();
+
     }
 
 }
