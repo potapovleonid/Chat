@@ -116,7 +116,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         String user = tfLogin.getText();
         if (msg.equals("")) return;
         tfMessage.setText("");
-        tfMessage.requestFocusInWindow();
+        tfMessage.grabFocus();
         putLog(String.format("%s: %s", user, msg));
         writeMsgToLog(msg, user);
     }
