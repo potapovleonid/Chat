@@ -1,4 +1,4 @@
-package com.home.des.server.network;
+package ru.home.des.chat.network;
 
 public class ServerSocketThread extends Thread {
     private int port;

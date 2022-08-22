@@ -1,6 +1,6 @@
-package com.home.des.server.core;
+package ru.home.des.chat.server.core;
 
-import com.home.des.server.network.ServerSocketThread;
+import ru.home.des.chat.network.ServerSocketThread;
 
 public class ChatServer {
 

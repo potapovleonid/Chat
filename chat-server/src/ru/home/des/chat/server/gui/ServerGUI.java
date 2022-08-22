@@ -1,6 +1,6 @@
-package com.home.des.server.gui;
+package ru.home.des.chat.server.gui;
 
-import com.home.des.server.core.ChatServer;
+import ru.home.des.chat.server.core.ChatServer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,7 +30,7 @@ public class ServerGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     private ServerGUI(){
         Thread.setDefaultUncaughtExceptionHandler(this);
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setBounds(POS_X, POS_Y, WIDTH, HEIGHT);
         setResizable(false);
         setTitle("Chat server");

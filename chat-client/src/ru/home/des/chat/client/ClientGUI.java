@@ -1,6 +1,4 @@
-package com.home.des.client;
-
-import com.home.des.server.gui.ServerGUI;
+package ru.home.des.chat.client;
 
 import javax.swing.*;
 import java.awt.*;
@@ -41,7 +39,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     private ClientGUI() {
         Thread.setDefaultUncaughtExceptionHandler(this);
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setSize(WIDTH, HEIGHT);
         setTitle("Chat client");
