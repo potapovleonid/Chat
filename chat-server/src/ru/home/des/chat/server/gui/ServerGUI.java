@@ -34,7 +34,6 @@ public class ServerGUI extends JFrame implements ActionListener, Thread.Uncaught
         setBounds(POS_X, POS_Y, WIDTH, HEIGHT);
         setResizable(false);
         setTitle("Chat server");
-        setAlwaysOnTop(true);
         setLayout(new GridLayout(1, 2));
         setVisible(true);
 

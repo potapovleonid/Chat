@@ -63,6 +63,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         btnSend.addActionListener(this);
         tfMessage.addActionListener(this);
         btnLogin.addActionListener(this);
+        btnDisconnect.addActionListener(this);
 
         panelTop.add(tfIPAddress);
         panelTop.add(tfPort);
@@ -81,6 +82,10 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
         log.setEditable(false);
 
+        log.setVisible(false);
+        userList.setVisible(false);
+        panelBottom.setVisible(false);
+
         setVisible(true);
     }
 
@@ -93,6 +98,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             sendMessage();
         } else if (source == btnLogin) {
             connect();
+        } else if (source == btnDisconnect) {
+            socketThread.onSocketStop(socketThread);
         } else {
             throw new RuntimeException("Unknown source: " + source);
         }
@@ -133,9 +140,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         if (msg.equals("")) return;
         tfMessage.setText("");
         tfMessage.grabFocus();
-        socketThread.sendMessage(msg);
-//        putLog(String.format("%s: %s", user, msg));
-//        writeMsgToLog(msg, user);
+        socketThread.sendMessage(tfLogin.getText() + ": " + msg);
     }
 
     public void putLog(String msg) {
@@ -173,6 +178,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     @Override
     public void onSocketReady(SocketThread thread, Socket socket) {
         putLog("Ready");
+        setVisibleTopPanel(false);
     }
 
     @Override
@@ -183,5 +189,13 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     @Override
     public void onSocketException(SocketThread thread, Exception exception) {
         showException(thread, exception);
+        setVisibleTopPanel(true);
+    }
+
+    public void setVisibleTopPanel(boolean vision) {
+        panelTop.setVisible(vision);
+        panelBottom.setVisible(!vision);
+        log.setVisible(!vision);
+        userList.setVisible(!vision);
     }
 }

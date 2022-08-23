@@ -7,10 +7,12 @@ import ru.home.des.chat.network.SocketThreadListener;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Vector;
 
 public class ChatServer implements ServerSocketThreadListener, SocketThreadListener {
 
     private ServerSocketThread server;
+    private final Vector<SocketThread> allUsers = new Vector<>();
 
     public void start(int port) {
         if (server == null) {
@@ -72,6 +74,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     @Override
     public void onSocketStart(SocketThread thread, Socket socket) {
         putLog("Client connected");
+        allUsers.add(thread);
     }
 
     @Override
@@ -86,7 +89,9 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
 
     @Override
     public void onReceiveString(SocketThread thread, Socket socket, String msg) {
-        thread.sendMessage("Echo: " + msg);
+        for (SocketThread s : allUsers) {
+            s.sendMessage(msg);
+        }
     }
 
     @Override
