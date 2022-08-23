@@ -4,14 +4,15 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.concurrent.TimeoutException;
 
 public class ServerSocketThread extends Thread {
     private int port;
     private final int timeout;
+    private final ServerSocketThreadListener listener;
 
-    public ServerSocketThread(String name, int port, int timeout) {
+    public ServerSocketThread(ServerSocketThreadListener listener, String name, int port, int timeout) {
         super(name);
+        this.listener = listener;
         this.port = port;
         this.timeout = timeout;
         start();
@@ -19,22 +20,24 @@ public class ServerSocketThread extends Thread {
 
     @Override
     public void run() {
-        System.out.println("Server thread start");
+        listener.onServerStart(this);
         try (ServerSocket server = new ServerSocket(port)) {
             server.setSoTimeout(timeout);
-            System.out.println("Server created");
+            listener.onServerSocketCreated(this, server);
             while (!isInterrupted()) {
                 Socket socket;
                 try {
                     socket = server.accept();
                 } catch (SocketTimeoutException e){
-                    e.printStackTrace();
+                    listener.onServerTimeout(this, server);
                     continue;
                 }
-
+                listener.onSocketAccepted(this, server, socket);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            listener.onServerException(this, e);
+        } finally {
+            listener.onServerStop(this);
         }
     }
 }

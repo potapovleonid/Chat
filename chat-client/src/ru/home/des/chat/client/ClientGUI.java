@@ -1,13 +1,17 @@
 package ru.home.des.chat.client;
 
+import ru.home.des.chat.network.SocketThread;
+import ru.home.des.chat.network.SocketThreadListener;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.Socket;
 
-public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler {
+public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
 
     private static final int WIDTH = 450;
     private static final int HEIGHT = 350;
@@ -27,6 +31,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private final JButton btnSend = new JButton("Send");
 
     private final JList<String> userList = new JList<>();
+
+    private SocketThread socketThread;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -56,6 +62,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         cbAlwaysOnTop.addActionListener(this);
         btnSend.addActionListener(this);
         tfMessage.addActionListener(this);
+        btnLogin.addActionListener(this);
 
         panelTop.add(tfIPAddress);
         panelTop.add(tfPort);
@@ -84,15 +91,17 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             setAlwaysOnTop(cbAlwaysOnTop.isSelected());
         } else if (source == btnSend || source == tfMessage) {
             sendMessage();
+        } else if (source == btnLogin) {
+            connect();
         } else {
             throw new RuntimeException("Unknown source: " + source);
         }
     }
 
-    public void showException(Thread t, Throwable e){
+    public void showException(Thread t, Throwable e) {
         String msg;
         StackTraceElement[] ste = e.getStackTrace();
-        if (ste.length == 0){
+        if (ste.length == 0) {
             msg = "Empty Stacktrace";
         } else {
             msg = "Exception in thread " + t.getName() + " " +
@@ -109,17 +118,27 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         System.exit(1);
     }
 
-    public void sendMessage(){
+    private void connect() {
+        try {
+            Socket socket = new Socket(tfIPAddress.getText(), Integer.parseInt(tfPort.getText()));
+            socketThread = new SocketThread(this, "Client", socket);
+        } catch (IOException e) {
+            showException(Thread.currentThread(), e);
+        }
+    }
+
+    public void sendMessage() {
         String msg = tfMessage.getText();
         String user = tfLogin.getText();
         if (msg.equals("")) return;
         tfMessage.setText("");
         tfMessage.grabFocus();
-        putLog(String.format("%s: %s", user, msg));
-        writeMsgToLog(msg, user);
+        socketThread.sendMessage(msg);
+//        putLog(String.format("%s: %s", user, msg));
+//        writeMsgToLog(msg, user);
     }
 
-    public void putLog(String msg){
+    public void putLog(String msg) {
         if ("".equals(msg)) return;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -130,8 +149,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         });
     }
 
-    public void writeMsgToLog(String msg, String username){
-        try (FileWriter out = new FileWriter("log.txt", true)){
+    public void writeMsgToLog(String msg, String username) {
+        try (FileWriter out = new FileWriter("log.txt", true)) {
             out.write(username + ": " + msg + "\n");
             out.flush();
         } catch (IOException e) {
@@ -139,5 +158,30 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         }
     }
 
+//  Socket thread methods
 
+    @Override
+    public void onSocketStart(SocketThread thread, Socket socket) {
+        putLog("Start");
+    }
+
+    @Override
+    public void onSocketStop(SocketThread thread) {
+        putLog("Stop");
+    }
+
+    @Override
+    public void onSocketReady(SocketThread thread, Socket socket) {
+        putLog("Ready");
+    }
+
+    @Override
+    public void onReceiveString(SocketThread thread, Socket socket, String msg) {
+        putLog(msg);
+    }
+
+    @Override
+    public void onSocketException(SocketThread thread, Exception exception) {
+        showException(thread, exception);
+    }
 }
