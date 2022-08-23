@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
-Main-Class: com.home.des.server.gui.ServerGUI
+Main-Class: ru.home.des.chat.server.gui.ServerGUI
 

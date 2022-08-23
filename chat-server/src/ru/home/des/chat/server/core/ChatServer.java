@@ -9,7 +9,7 @@ public class ChatServer {
     public void start(int port){
         if (server == null) {
             System.out.printf("Server started at port: %d\n", port);
-            server = new ServerSocketThread("Server", port);
+//            server = new ServerSocketThread("Server", port);
         } else {
             System.out.println("Server already started");
         }
