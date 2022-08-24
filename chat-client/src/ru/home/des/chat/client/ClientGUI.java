@@ -167,7 +167,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     @Override
     public void onSocketStart(SocketThread thread, Socket socket) {
-        putLog("Start");
+//        putLog("Start");
     }
 
     @Override
@@ -177,7 +177,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     @Override
     public void onSocketReady(SocketThread thread, Socket socket) {
-        putLog("Ready");
+//        putLog("Ready");
         setVisibleTopPanel(false);
     }
 

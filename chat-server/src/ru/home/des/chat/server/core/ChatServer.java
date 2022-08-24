@@ -9,33 +9,41 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
 
-public class ChatServer implements ServerSocketThreadListener, SocketThreadListener {
+public class ChatServer implements ServerSocketThreadListener, SocketThreadListener{
 
     private ServerSocketThread server;
     private final Vector<SocketThread> allUsers = new Vector<>();
 
+    private final ChatServerListener listener;
+
+    public ChatServer(ChatServerListener listener) {
+        this.listener = listener;
+    }
+
     public void start(int port) {
         if (server == null) {
-            System.out.printf("Server started at port: %d\n", port);
+            putLog(String.format("Server started at port: %d", port));
             server = new ServerSocketThread(this, "Server", port, 2000);
         } else {
-            System.out.println("Server already started");
+            putLog("Server already started");
         }
     }
 
     public void stop() {
-        System.out.println("Server stopped\n");
+        putLog("Server stopped");
         if (server != null && server.isAlive()) {
             server.interrupt();
             server = null;
         } else {
-            System.out.println("Server not running");
+            putLog("Server not running");
         }
     }
 
     private void putLog(String msg) {
-        System.out.println(msg);
+        listener.onChatServerMessage(msg);
     }
+
+//  Server socket thread listener methods
 
     @Override
     public void onServerStart(ServerSocketThread thread) {
@@ -43,9 +51,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     }
 
     @Override
-    public void onServerStop(ServerSocketThread thread) {
-        putLog("Server stoped");
-    }
+    public void onServerStop(ServerSocketThread thread) {}
 
     @Override
     public void onServerSocketCreated(ServerSocketThread thread, ServerSocket server) {
@@ -69,7 +75,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
         putLog(exception.getMessage());
     }
 
-//  Socket thread methods
+//  Socket thread listener methods
 
     @Override
     public void onSocketStart(SocketThread thread, Socket socket) {
