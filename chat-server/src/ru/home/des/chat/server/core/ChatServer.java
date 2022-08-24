@@ -86,6 +86,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     @Override
     public void onSocketStop(SocketThread thread) {
         putLog("Client disconnected");
+        allUsers.remove(thread);
     }
 
     @Override
