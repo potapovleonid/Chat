@@ -5,7 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class SocketThread extends Thread implements SocketThreadListener {
+public class SocketThread extends Thread {
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
@@ -20,12 +20,14 @@ public class SocketThread extends Thread implements SocketThreadListener {
 
     @Override
     public void run() {
-        listener.onSocketStart(this, socket);
-
         try {
+            listener.onSocketStart(this, socket);
+
             this.in = new DataInputStream(socket.getInputStream());
             this.out = new DataOutputStream(socket.getOutputStream());
+
             listener.onSocketReady(this, socket);
+
             while (!isInterrupted()) {
                 String msg = in.readUTF();
                 listener.onReceiveString(this, socket, msg);
@@ -34,6 +36,7 @@ public class SocketThread extends Thread implements SocketThreadListener {
             listener.onSocketException(this, e);
         } finally {
             close();
+            listener.onSocketStop(this);
         }
     }
 
@@ -44,44 +47,19 @@ public class SocketThread extends Thread implements SocketThreadListener {
             return true;
         } catch (IOException e) {
             listener.onSocketException(this, e);
-            listener.onSocketStop(this);
+            close();
             return false;
         }
 
     }
 
-    private synchronized void close() {
-        interrupt();
+    public synchronized void close() {
         try {
+            interrupt();
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            listener.onSocketException(this, e);
         }
     }
 
-
-    @Override
-    public void onSocketStart(SocketThread thread, Socket socket) {
-
-    }
-
-    @Override
-    public void onSocketStop(SocketThread thread) {
-        close();
-    }
-
-    @Override
-    public void onSocketReady(SocketThread thread, Socket socket) {
-
-    }
-
-    @Override
-    public void onReceiveString(SocketThread thread, Socket socket, String msg) {
-
-    }
-
-    @Override
-    public void onSocketException(SocketThread thread, Exception exception) {
-
-    }
 }

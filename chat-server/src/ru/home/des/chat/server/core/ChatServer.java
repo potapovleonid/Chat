@@ -21,16 +21,15 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     }
 
     public void start(int port) {
-        if (server == null) {
-            putLog(String.format("Server started at port: %d", port));
+        if (server == null || !server.isAlive()) {
             server = new ServerSocketThread(this, "Server", port, 2000);
+            putLog(String.format("Server started at port: %d", port));
         } else {
             putLog("Server already started");
         }
     }
 
     public void stop() {
-        putLog("Server stopped");
         if (server != null && server.isAlive()) {
             server.interrupt();
             server = null;
@@ -51,7 +50,9 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     }
 
     @Override
-    public void onServerStop(ServerSocketThread thread) {}
+    public void onServerStop(ServerSocketThread thread) {
+        putLog("Server stopped");
+    }
 
     @Override
     public void onServerSocketCreated(ServerSocketThread thread, ServerSocket server) {

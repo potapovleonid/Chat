@@ -31,7 +31,6 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private final JButton btnSend = new JButton("Send");
 
     private final JList<String> userList = new JList<>();
-
     private SocketThread socketThread;
 
     public static void main(String[] args) {
@@ -99,7 +98,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         } else if (source == btnLogin) {
             connect();
         } else if (source == btnDisconnect) {
-            socketThread.onSocketStop(socketThread);
+            socketThread.close();
         } else {
             throw new RuntimeException("Unknown source: " + source);
         }
@@ -116,13 +115,6 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
                     e.getMessage() + "\n\t" + ste[0];
         }
         JOptionPane.showMessageDialog(null, msg, "Exception", JOptionPane.ERROR_MESSAGE);
-    }
-
-    @Override
-    public void uncaughtException(Thread t, Throwable e) {
-        e.printStackTrace();
-        showException(t, e);
-        System.exit(1);
     }
 
     private void connect() {
@@ -161,6 +153,13 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        e.printStackTrace();
+        showException(t, e);
+        System.exit(1);
     }
 
 //  Socket thread methods
