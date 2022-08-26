@@ -1,5 +1,6 @@
 package ru.home.des.chat.client;
 
+import ru.home.des.chat.library.Library;
 import ru.home.des.chat.network.SocketThread;
 import ru.home.des.chat.network.SocketThreadListener;
 
@@ -132,7 +133,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         if (msg.equals("")) return;
         tfMessage.setText("");
         tfMessage.grabFocus();
-        socketThread.sendMessage(tfLogin.getText() + ": " + msg);
+        socketThread.sendMessage(user + ": " + msg);
     }
 
     public void putLog(String msg) {
@@ -178,11 +179,14 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     public void onSocketReady(SocketThread thread, Socket socket) {
 //        putLog("Ready");
         setVisibleTopPanel(false);
+        String login = tfLogin.getText();
+        String password = new String(tfPassword.getPassword());
+        thread.sendMessage(Library.getAuthRequest(login, password));
     }
 
     @Override
     public void onReceiveString(SocketThread thread, Socket socket, String msg) {
-        putLog(msg);
+        parseMessage(msg);
     }
 
     @Override
@@ -197,4 +201,11 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         log.setVisible(!vision);
         userList.setVisible(!vision);
     }
+
+    //#TODO parse all message
+    private void parseMessage(String msg) {
+//        if ()
+    }
+
+
 }

@@ -1,5 +1,6 @@
 package ru.home.des.chat.server.core;
 
+import ru.home.des.chat.library.Library;
 import ru.home.des.chat.network.ServerSocketThread;
 import ru.home.des.chat.network.ServerSocketThreadListener;
 import ru.home.des.chat.network.SocketThread;
@@ -69,7 +70,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     public void onSocketAccepted(ServerSocketThread thread, ServerSocket server, Socket socket) {
         putLog("Client connected");
         String name = "Socket thread " + socket.getInetAddress() + ":" + socket.getPort();
-        new SocketThread(this, name, socket);
+        new ClientThread(this, name, socket);
     }
 
     @Override
@@ -83,6 +84,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     @Override
     public void onSocketStart(SocketThread thread, Socket socket) {
         putLog("Client connected");
+
         allUsers.add(thread);
     }
 
@@ -99,7 +101,41 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
 
     @Override
     public void onReceiveString(SocketThread thread, Socket socket, String msg) {
+        ClientThread client = (ClientThread) thread;
+        if (client.isAuthorized()){
+            handleAutorizeMessage(client, msg);
+        } else {
+            handleNonAutorizeMessage(client, msg);
+        }
+    }
+
+    private void handleAutorizeMessage(ClientThread client, String msg) {
+        sendToAllAutorizeClients(msg);
+    }
+
+    private void handleNonAutorizeMessage(ClientThread client, String msg) {
+        String[] arr = msg.split(Library.DELIMITER);
+        if (arr.length != 3 || !arr[0].equals(Library.AUTH_REQUEST)){
+            client.msgFormatError(msg);
+            return;
+        }
+//#TODO in library
+        String login = arr[1];
+        String password = arr[2];
+        String nickname = SQLClient.getNickname(login, password);
+        if (nickname == null){
+            putLog("Invalid credentials for user " + login);
+            client.authFail();
+            return;
+        }
+        client.authAccept(nickname);
+        sendToAllAutorizeClients(Library.getTypeBroadcast("Server", nickname + " connected"));
+    }
+
+    private void sendToAllAutorizeClients(String msg) {
         for (SocketThread s : allUsers) {
+            ClientThread client = (ClientThread) s;
+            if (!client.isAuthorized()) continue;
             s.sendMessage(msg);
         }
     }
