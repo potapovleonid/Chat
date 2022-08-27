@@ -22,8 +22,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private final JTextField tfIPAddress = new JTextField("127.0.0.1");
     private final JTextField tfPort = new JTextField("8181");
     private final JCheckBox cbAlwaysOnTop = new JCheckBox("Always on top");
-    private final JTextField tfLogin = new JTextField("Leonid");
-    private final JPasswordField tfPassword = new JPasswordField("123");
+    private final JTextField tfLogin = new JTextField("leonid");
+    private final JPasswordField tfPassword = new JPasswordField("leonid123");
     private final JButton btnLogin = new JButton("Login");
 
     private final JPanel panelBottom = new JPanel(new BorderLayout());
@@ -129,11 +129,10 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     public void sendMessage() {
         String msg = tfMessage.getText();
-        String user = tfLogin.getText();
         if (msg.equals("")) return;
         tfMessage.setText("");
         tfMessage.grabFocus();
-        socketThread.sendMessage(user + ": " + msg);
+        socketThread.sendMessage(msg);
     }
 
     public void putLog(String msg) {
@@ -186,7 +185,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     @Override
     public void onReceiveString(SocketThread thread, Socket socket, String msg) {
-        parseMessage(msg);
+        putLog(parseMessage(msg));
     }
 
     @Override
@@ -202,9 +201,20 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         userList.setVisible(!vision);
     }
 
-    //#TODO parse all message
-    private void parseMessage(String msg) {
-//        if ()
+    //#TODO in library
+    private String parseMessage(String msg) {
+        String[] arrMsg = msg.split(Library.DELIMITER);
+        if (arrMsg.length == 2 && arrMsg[0].equals(Library.AUTH_ACCEPT)) {
+            return "Welcome " + arrMsg[1];
+        } else if (arrMsg.length == 4 && arrMsg[0].equals(Library.TYPE_BROADCAST)) {
+//            TODO add time message
+            if (arrMsg[2].equals("Server")) {
+                return arrMsg[2] + ": " + arrMsg[3];
+            } else if (arrMsg[2].equals("User")){
+                return arrMsg[3];
+            }
+        }
+        return msg;
     }
 
 

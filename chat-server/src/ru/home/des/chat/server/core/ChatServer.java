@@ -110,7 +110,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     }
 
     private void handleAutorizeMessage(ClientThread client, String msg) {
-        sendToAllAutorizeClients(msg);
+        sendToAllAutorizeClients(Library.getTypeBroadcast("User", client.getNickname() + ": " + msg));
     }
 
     private void handleNonAutorizeMessage(ClientThread client, String msg) {
