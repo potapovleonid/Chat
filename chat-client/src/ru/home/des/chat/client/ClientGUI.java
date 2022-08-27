@@ -213,6 +213,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             } else if (arrMsg[2].equals("User")){
                 return arrMsg[3];
             }
+        } else if (arrMsg[0].equals(Library.AUTH_DENIED)){
+            showException(socketThread, new Throwable("Unknown login or password"));
         }
         return msg;
     }
