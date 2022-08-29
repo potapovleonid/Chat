@@ -205,11 +205,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
                 socketThread.close();
                 break;
             case Library.TYPE_BROADCAST:
-                if (arrMsg[2].equals("Server")) {
-                    putLog(DATE_FORMAT.format(Long.parseLong(arrMsg[1])) + " " + arrMsg[2] + ": " + arrMsg[3]);
-                } else {
-                    putLog(DATE_FORMAT.format(Long.parseLong(arrMsg[1])) + " " + arrMsg[2] + ": " + arrMsg[3]);
-                }
+                putLog(DATE_FORMAT.format(Long.parseLong(arrMsg[1])) + " " + arrMsg[2] + ": " + arrMsg[3]);
                 break;
         }
 
