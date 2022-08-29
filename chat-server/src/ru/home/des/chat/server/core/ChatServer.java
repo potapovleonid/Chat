@@ -92,6 +92,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     public void onSocketStop(SocketThread thread) {
         putLog("Client disconnected");
         allUsers.remove(thread);
+        thread.close();
     }
 
     @Override
@@ -110,7 +111,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     }
 
     private void handleAutorizeMessage(ClientThread client, String msg) {
-        sendToAllAutorizeClients(Library.getTypeBroadcast("User", client.getNickname() + ": " + msg));
+        sendToAllAutorizeClients(Library.getTypeBroadcast(client.getNickname(),  msg));
     }
 
     private void handleNonAutorizeMessage(ClientThread client, String msg) {

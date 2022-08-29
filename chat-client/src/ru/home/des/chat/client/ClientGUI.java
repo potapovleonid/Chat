@@ -8,9 +8,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
 
@@ -31,16 +32,14 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private final JTextField tfMessage = new JTextField();
     private final JButton btnSend = new JButton("Send");
 
+    private final DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm");
+    private final String WINDOW_TITLE = "Chat";
+
     private final JList<String> userList = new JList<>();
     private SocketThread socketThread;
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new ClientGUI();
-            }
-        });
+        SwingUtilities.invokeLater(ClientGUI::new);
     }
 
     private ClientGUI() {
@@ -137,22 +136,10 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     public void putLog(String msg) {
         if ("".equals(msg)) return;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                log.append(msg + "\n");
-                log.setCaretPosition(log.getDocument().getLength());
-            }
+        SwingUtilities.invokeLater(() -> {
+            log.append(msg + "\n");
+            log.setCaretPosition(log.getDocument().getLength());
         });
-    }
-
-    public void writeMsgToLog(String msg, String username) {
-        try (FileWriter out = new FileWriter("log.txt", true)) {
-            out.write(username + ": " + msg + "\n");
-            out.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -177,7 +164,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     @Override
     public void onSocketReady(SocketThread thread, Socket socket) {
 //        putLog("Ready");
-        setVisibleTopPanel(false);
+        setVisibleTopPanel(!isVisible());
         String login = tfLogin.getText();
         String password = new String(tfPassword.getPassword());
         thread.sendMessage(Library.getAuthRequest(login, password));
@@ -185,7 +172,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     @Override
     public void onReceiveString(SocketThread thread, Socket socket, String msg) {
-        putLog(parseMessage(msg));
+        parseMessage(msg);
     }
 
     @Override
@@ -202,21 +189,30 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     }
 
     //#TODO in library
-    private String parseMessage(String msg) {
+    private void parseMessage(String msg) {
         String[] arrMsg = msg.split(Library.DELIMITER);
-        if (arrMsg.length == 2 && arrMsg[0].equals(Library.AUTH_ACCEPT)) {
-            return "Welcome " + arrMsg[1];
-        } else if (arrMsg.length == 4 && arrMsg[0].equals(Library.TYPE_BROADCAST)) {
-//            TODO add time message
-            if (arrMsg[2].equals("Server")) {
-                return arrMsg[2] + ": " + arrMsg[3];
-            } else if (arrMsg[2].equals("User")){
-                return arrMsg[3];
-            }
-        } else if (arrMsg[0].equals(Library.AUTH_DENIED)){
-            showException(socketThread, new Throwable("Unknown login or password"));
+        String msgType = arrMsg[0];
+
+        switch (msgType) {
+            case Library.AUTH_ACCEPT:
+                putLog("Welcome " + arrMsg[1]);
+                break;
+            case Library.AUTH_DENIED:
+                showException(socketThread, new Throwable("Unknown login or password"));
+                setVisibleTopPanel(true);
+            case Library.MSG_FORMAT_ERROR:
+                putLog(msg);
+                socketThread.close();
+                break;
+            case Library.TYPE_BROADCAST:
+                if (arrMsg[2].equals("Server")) {
+                    putLog(DATE_FORMAT.format(Long.parseLong(arrMsg[1])) + " " + arrMsg[2] + ": " + arrMsg[3]);
+                } else {
+                    putLog(DATE_FORMAT.format(Long.parseLong(arrMsg[1])) + " " + arrMsg[2] + ": " + arrMsg[3]);
+                }
+                break;
         }
-        return msg;
+
     }
 
 
