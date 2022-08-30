@@ -132,7 +132,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         if (msg.equals("")) return;
         tfMessage.setText("");
         tfMessage.grabFocus();
-        socketThread.sendMessage(msg);
+        socketThread.sendMessage(Library.getTypeBroadcastClient(msg));
     }
 
     public void putLog(String msg) {
