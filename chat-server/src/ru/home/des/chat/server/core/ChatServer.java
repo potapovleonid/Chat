@@ -10,7 +10,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
 
-public class ChatServer implements ServerSocketThreadListener, SocketThreadListener{
+public class ChatServer implements ServerSocketThreadListener, SocketThreadListener {
 
     private ServerSocketThread server;
     private final Vector<SocketThread> allUsers = new Vector<>();
@@ -41,6 +41,16 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
 
     private void putLog(String msg) {
         listener.onChatServerMessage(msg);
+    }
+
+    private synchronized String getUsers() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < allUsers.size(); i++) {
+            ClientThread client = (ClientThread) allUsers.get(i);
+            if (!client.isAuthorized()) continue;
+            sb.append(client.getNickname()).append(Library.DELIMITER);
+        }
+        return sb.toString();
     }
 
 //  Server socket thread listener methods
@@ -90,9 +100,15 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
 
     @Override
     public void onSocketStop(SocketThread thread) {
+        ClientThread client = (ClientThread) thread;
         putLog("Client disconnected");
         allUsers.remove(thread);
+        if (client.isAuthorized()) {
+            sendToAllAuthorizedClients(Library.getTypeBroadcast("Server",
+                    client.getNickname() + " disconnected"));
+        }
         thread.close();
+        sendToAllAuthorizedClients(Library.getUserList(getUsers()));
     }
 
     @Override
@@ -103,7 +119,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     @Override
     public void onReceiveString(SocketThread thread, Socket socket, String msg) {
         ClientThread client = (ClientThread) thread;
-        if (client.isAuthorized()){
+        if (client.isAuthorized()) {
             handleAutorizeMessage(client, msg);
         } else {
             handleNonAutorizeMessage(client, msg);
@@ -111,12 +127,12 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     }
 
     private void handleAutorizeMessage(ClientThread client, String msg) {
-        sendToAllAutorizeClients(Library.getTypeBroadcast(client.getNickname(),  msg));
+        sendToAllAuthorizedClients(Library.getTypeBroadcast(client.getNickname(), msg));
     }
 
     private void handleNonAutorizeMessage(ClientThread client, String msg) {
         String[] arr = msg.split(Library.DELIMITER);
-        if (arr.length != 3 || !arr[0].equals(Library.AUTH_REQUEST)){
+        if (arr.length != 3 || !arr[0].equals(Library.AUTH_REQUEST)) {
             client.msgFormatError(msg);
             return;
         }
@@ -124,16 +140,17 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
         String login = arr[1];
         String password = arr[2];
         String nickname = SQLClient.getNickname(login, password);
-        if (nickname == null){
+        if (nickname == null) {
             putLog("Invalid credentials for user " + login);
             client.authFail();
             return;
         }
         client.authAccept(nickname);
-        sendToAllAutorizeClients(Library.getTypeBroadcast("Server", nickname + " connected"));
+        sendToAllAuthorizedClients(Library.getTypeBroadcast("Server", nickname + " connected"));
+        sendToAllAuthorizedClients(Library.getUserList(getUsers()));
     }
 
-    private void sendToAllAutorizeClients(String msg) {
+    private void sendToAllAuthorizedClients(String msg) {
         for (SocketThread s : allUsers) {
             ClientThread client = (ClientThread) s;
             if (!client.isAuthorized()) continue;

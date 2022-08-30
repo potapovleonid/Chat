@@ -6,6 +6,7 @@ public class Library {
     public static final String AUTH_ACCEPT = "/auth_accept";
     public static final String AUTH_DENIED = "/auth_denied";
     public static final String MSG_FORMAT_ERROR = "/msg_format_error";
+    public static final String USER_LIST = "/user_list";
 
     public static final String TYPE_BROADCAST = "/bcast";
 
@@ -21,6 +22,10 @@ public class Library {
         return AUTH_DENIED;
     }
 
+    public static String getUserList(String users) {
+        return USER_LIST + DELIMITER + users;
+    }
+
     public static String getMsgFormatError(String msg){
         return MSG_FORMAT_ERROR + DELIMITER + msg;
     }
@@ -28,4 +33,6 @@ public class Library {
     public static String getTypeBroadcast(String src, String msg){
         return TYPE_BROADCAST + DELIMITER + System.currentTimeMillis() + DELIMITER + src + DELIMITER + msg;
     }
+
+
 }

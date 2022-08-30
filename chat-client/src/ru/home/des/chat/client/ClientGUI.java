@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 
 public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
 
@@ -207,6 +208,15 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             case Library.TYPE_BROADCAST:
                 putLog(DATE_FORMAT.format(Long.parseLong(arrMsg[1])) + " " + arrMsg[2] + ": " + arrMsg[3]);
                 break;
+            case Library.USER_LIST:
+                String users = msg.substring(Library.USER_LIST.length() +
+                        Library.DELIMITER.length());
+                String[] usersArr = users.split(Library.DELIMITER);
+                Arrays.sort(usersArr);
+                userList.setListData(usersArr);
+                break;
+            default:
+                throw new RuntimeException("Unknown message type: " + msg);
         }
 
     }
