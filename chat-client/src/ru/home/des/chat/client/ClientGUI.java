@@ -15,7 +15,9 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
-
+    /**
+     * TODO add registration panel
+     **/
     private static final int WIDTH = 450;
     private static final int HEIGHT = 350;
 
@@ -48,10 +50,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setSize(WIDTH, HEIGHT);
-        setTitle("Chat client");
-
-        String[] users = {"user1", "user2", "user3", "user4", "user5", "user6", "user7", "user8"};
-        userList.setListData(users);
+        setTitle(WINDOW_TITLE);
 
         JScrollPane scrollLog = new JScrollPane(log);
         JScrollPane scrollUsers = new JScrollPane(userList);
@@ -189,7 +188,6 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         userList.setVisible(!vision);
     }
 
-    //#TODO in library
     private void parseMessage(String msg) {
         String[] arrMsg = msg.split(Library.DELIMITER);
         String msgType = arrMsg[0];
