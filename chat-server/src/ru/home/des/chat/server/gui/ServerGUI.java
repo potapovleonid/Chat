@@ -82,10 +82,12 @@ public class ServerGUI extends JFrame implements ActionListener, Thread.Uncaught
 
             log.setCaretPosition(log.getDocument().getLength());
         });
-        if (msg.equals("Server started")){
-            setVisibleStart(false);
-        } else if (msg.equals("Server stopped")){
-            setVisibleStart(true);
+        if (msg != null) {
+            if (msg.equals("Server started")) {
+                setVisibleStart(false);
+            } else if (msg.equals("Server stopped")) {
+                setVisibleStart(true);
+            }
         }
     }
 
