@@ -21,25 +21,21 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
         this.listener = listener;
     }
 
-    public boolean start(int port) {
+    public void start(int port) {
         if (server == null || !server.isAlive()) {
             server = new ServerSocketThread(this, "Server", port, 2000);
             putLog(String.format("Server started at port: %d", port));
-            return true;
         } else {
             putLog("Server already started");
-            return false;
         }
     }
 
-    public boolean stop() {
+    public void stop() {
         if (server != null && server.isAlive()) {
             server.interrupt();
             server = null;
-            return true;
         } else {
             putLog("Server not running");
-            return false;
         }
     }
 

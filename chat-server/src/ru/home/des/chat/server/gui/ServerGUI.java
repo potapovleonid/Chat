@@ -55,9 +55,9 @@ public class ServerGUI extends JFrame implements ActionListener, Thread.Uncaught
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
         if (source == btnStart) {
-            setVisibleStart(!chatServer.start(8181));
+            chatServer.start(8181);
         } else if (source == btnStop) {
-            setVisibleStart(chatServer.stop());
+            chatServer.stop();
         } else
             throw new RuntimeException("Unknown source: " + source);
     }
@@ -79,12 +79,18 @@ public class ServerGUI extends JFrame implements ActionListener, Thread.Uncaught
     public void onChatServerMessage(String msg) {
         SwingUtilities.invokeLater(() -> {
             log.append(msg + "\n");
+
             log.setCaretPosition(log.getDocument().getLength());
         });
+        if (msg.equals("Server started")){
+            setVisibleStart(false);
+        } else if (msg.equals("Server stopped")){
+            setVisibleStart(true);
+        }
     }
 
     public void setVisibleStart(boolean visible){
-        btnStart.setVisible(visible);
-        btnStop.setVisible(!visible);
+        btnStart.setEnabled(visible);
+        btnStop.setEnabled(!visible);
     }
 }
