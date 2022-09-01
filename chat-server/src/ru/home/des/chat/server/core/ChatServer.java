@@ -64,15 +64,15 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     }
 
     private void handleAuthorizedMessage(ClientThread user, String msg) {
-        String[] arr = msg.split(Library.DELIMITER);
-        String msgType = arr[0];
+        String[] message = msg.split(Library.DELIMITER);
+        String msgType = message[0];
 
         switch (msgType) {
             case Library.TYPE_BROADCAST_CLIENT:
-                sendToAllAuthorizedClients(Library.getTypeBroadcast(user.getNickname(), arr[1]));
+                sendToAllAuthorizedClients(Library.getTypeBroadcast(user.getNickname(), message[1]));
                 break;
             case Library.TYPE_PRIVATE_MESSAGE:
-                sendPrivateMessage(msg, user.getNickname());
+                sendPrivateMessage(message[3], user.getNickname(), message[2]);
                 break;
             default:
                 user.sendMessage(Library.getMsgFormatError(msg));
@@ -115,12 +115,12 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
         }
     }
 
-    private synchronized void sendPrivateMessage(String msg, String sender){
-        String[] message = msg.split(Library.DELIMITER);
-        String nickname = message[1];
-        ClientThread user = findClientByNickname(nickname);
-        if (user != null && user.isAuthorized()) user.sendMessage(Library.getPrivateMessage(
-                Library.getPrivateFormatMessage(sender), message[2]));
+    private synchronized void sendPrivateMessage(String msg, String sender, String client) {
+        ClientThread user = findClientByNickname(client);
+        if (user != null && user.isAuthorized())
+            user.sendMessage(Library.getTypePrivateMessage(sender, msg));
+
+        System.out.println(Library.getTypePrivateMessage(sender, msg));
     }
 
 

@@ -5,8 +5,6 @@ import ru.home.des.chat.network.SocketThread;
 import ru.home.des.chat.network.SocketThreadListener;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -60,7 +58,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
         scrollUsers.setPreferredSize(new Dimension(100, 0));
 
-//      Adding listeners for buttons and objects
+// Adding listeners for buttons and objects
         cbAlwaysOnTop.addActionListener(this);
         btnSend.addActionListener(this);
         tfMessage.addActionListener(this);
@@ -69,7 +67,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         userList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                privateMessage = Library.getPrivateFormatMessage(userList.getSelectedValue());
+                privateMessage = userList.getSelectedValue();
             }
         });
 
@@ -108,8 +106,6 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             connect();
         } else if (source == btnDisconnect) {
             socketThread.close();
-        } else if (source == log) {
-            System.out.println(log.getSelectedText());
         } else {
             throw new RuntimeException("Unknown source: " + source);
         }
@@ -142,9 +138,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         if (msg.equals("")) return;
         tfMessage.setText("");
         tfMessage.grabFocus();
-//        TODO PRIVATE MESSAGE
         if (privateMessage != null) {
-            socketThread.sendMessage(Library.getPrivateMessage(privateMessage, msg));
+            socketThread.sendMessage(Library.getTypePrivateMessage(privateMessage, msg));
             privateMessage = null;
             return;
         }
@@ -170,7 +165,6 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     @Override
     public void onSocketStart(SocketThread thread, Socket socket) {
-//        putLog("Start");
     }
 
     @Override
@@ -180,11 +174,10 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     @Override
     public void onSocketReady(SocketThread thread, Socket socket) {
-//        putLog("Ready");
-        setVisibleTopPanel(!isVisible());
         String login = tfLogin.getText();
         String password = new String(tfPassword.getPassword());
         thread.sendMessage(Library.getAuthRequest(login, password));
+        setVisibleTopPanel(!isVisible());
     }
 
     @Override
@@ -231,8 +224,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
                 userList.setListData(usersArr);
                 break;
             case Library.TYPE_PRIVATE_MESSAGE:
-//                TODO parse message
-                putLog(msg);
+                putLog(DATE_FORMAT.format(Long.parseLong(arrMsg[1])) + " [PM] " + arrMsg[2] + ": " + arrMsg[3]);
                 break;
             default:
                 throw new RuntimeException("Unknown message type: " + msg);
