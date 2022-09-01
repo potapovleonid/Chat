@@ -5,9 +5,10 @@ import ru.home.des.chat.network.SocketThread;
 import ru.home.des.chat.network.SocketThreadListener;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.IOException;
 import java.net.Socket;
 import java.text.DateFormat;
@@ -41,6 +42,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private final JList<String> userList = new JList<>();
     private SocketThread socketThread;
 
+    private String privateMessage;
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(ClientGUI::new);
     }
@@ -63,6 +66,12 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         tfMessage.addActionListener(this);
         btnLogin.addActionListener(this);
         btnDisconnect.addActionListener(this);
+        userList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                privateMessage = Library.getPrivateFormatMessage(userList.getSelectedValue());
+            }
+        });
 
         panelTop.add(tfIPAddress);
         panelTop.add(tfPort);
@@ -99,6 +108,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             connect();
         } else if (source == btnDisconnect) {
             socketThread.close();
+        } else if (source == log) {
+            System.out.println(log.getSelectedText());
         } else {
             throw new RuntimeException("Unknown source: " + source);
         }
@@ -131,6 +142,12 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         if (msg.equals("")) return;
         tfMessage.setText("");
         tfMessage.grabFocus();
+//        TODO PRIVATE MESSAGE
+        if (privateMessage != null) {
+            socketThread.sendMessage(Library.getPrivateMessage(privateMessage, msg));
+            privateMessage = null;
+            return;
+        }
         socketThread.sendMessage(Library.getTypeBroadcastClient(msg));
     }
 
@@ -212,6 +229,10 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
                 String[] usersArr = users.split(Library.DELIMITER);
                 Arrays.sort(usersArr);
                 userList.setListData(usersArr);
+                break;
+            case Library.TYPE_PRIVATE_MESSAGE:
+//                TODO parse message
+                putLog(msg);
                 break;
             default:
                 throw new RuntimeException("Unknown message type: " + msg);

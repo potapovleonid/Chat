@@ -63,23 +63,26 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
         return null;
     }
 
-    private void handleAuthorizedMessage(ClientThread client, String msg) {
+    private void handleAuthorizedMessage(ClientThread user, String msg) {
         String[] arr = msg.split(Library.DELIMITER);
         String msgType = arr[0];
 
         switch (msgType) {
             case Library.TYPE_BROADCAST_CLIENT:
-                sendToAllAuthorizedClients(Library.getTypeBroadcast(client.getNickname(), arr[1]));
+                sendToAllAuthorizedClients(Library.getTypeBroadcast(user.getNickname(), arr[1]));
+                break;
+            case Library.TYPE_PRIVATE_MESSAGE:
+                sendPrivateMessage(msg, user.getNickname());
                 break;
             default:
-                client.sendMessage(Library.getMsgFormatError(msg));
+                user.sendMessage(Library.getMsgFormatError(msg));
         }
     }
 
-    private void handleNonAuthorizedMessage(ClientThread client, String msg) {
+    private void handleNonAuthorizedMessage(ClientThread user, String msg) {
         String[] arr = msg.split(Library.DELIMITER);
         if (arr.length != 3 || !arr[0].equals(Library.AUTH_REQUEST)) {
-            client.msgFormatError(msg);
+            user.msgFormatError(msg);
             return;
         }
 
@@ -88,11 +91,11 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
         String nickname = SQLClient.getNickname(login, password);
         if (nickname == null) {
             putLog("Invalid credentials for user " + login);
-            client.authFail();
+            user.authFail();
             return;
         } else {
             ClientThread oldClient = findClientByNickname(nickname);
-            client.authAccept(nickname);
+            user.authAccept(nickname);
             if (oldClient == null) {
                 sendToAllAuthorizedClients(Library.getTypeBroadcast("Server", nickname + " connected"));
             } else {
@@ -106,10 +109,18 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
 
     private synchronized void sendToAllAuthorizedClients(String msg) {
         for (SocketThread s : allUsers) {
-            ClientThread client = (ClientThread) s;
-            if (!client.isAuthorized()) continue;
+            ClientThread user = (ClientThread) s;
+            if (!user.isAuthorized()) continue;
             s.sendMessage(msg);
         }
+    }
+
+    private synchronized void sendPrivateMessage(String msg, String sender){
+        String[] message = msg.split(Library.DELIMITER);
+        String nickname = message[1];
+        ClientThread user = findClientByNickname(nickname);
+        if (user != null && user.isAuthorized()) user.sendMessage(Library.getPrivateMessage(
+                Library.getPrivateFormatMessage(sender), message[2]));
     }
 
 
