@@ -1,7 +1,7 @@
 package ru.home.des.chat.server.core;
 
+import ru.home.des.chat.library.Library;
 import java.sql.*;
-import java.util.Properties;
 
 public class SQLClient {
 
@@ -10,7 +10,6 @@ public class SQLClient {
 
     synchronized static void connect(){
         try {
-//            Class.forName("org.postgresql.jdbc");
             String url = "jdbc:postgresql://localhost/chat-server";
 
             connection = DriverManager.getConnection(url, "postgres", "postgres");
@@ -33,6 +32,19 @@ public class SQLClient {
         try (ResultSet set = statement.executeQuery(query)) {
             if (set.next()){
                 return set.getString(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    synchronized static String addUser(String login, String password, String nickname){
+        String query = String.format("INSERT INTO users_tbl values ('%s', '%s', '%s')", login, password, nickname);
+        try {
+            int rows = statement.executeUpdate(query);
+            if (rows != 0){
+                return Library.getRegistrationAccept(nickname);
             }
         } catch (SQLException e) {
             e.printStackTrace();

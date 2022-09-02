@@ -7,6 +7,14 @@ public class Library {
     private static final String REGISTRATION_ACCEPT = "/reg_accept";
     private static final String REGISTRATION_DENIED = "/reg_denied";
 
+    private static final String CHANGE_PASSWORD_REQUEST = "/change_psw_request";
+    private static final String CHANGE_PASSWORD_ACCEPT = "/change_psw_request";
+    private static final String CHANGE_PASSWORD_DENIED = "/change_psw_request";
+
+    private static final String CHANGE_NICKNAME_REQUEST = "/change_nick_request";
+    private static final String CHANGE_NICKNAME_ACCEPT = "/change_nick_request";
+    private static final String CHANGE_NICKNAME_DENIED = "/change_nick_request";
+
     public static final String AUTH_REQUEST = "/auth_request";
     public static final String AUTH_ACCEPT = "/auth_accept";
     public static final String AUTH_DENIED = "/auth_denied";
