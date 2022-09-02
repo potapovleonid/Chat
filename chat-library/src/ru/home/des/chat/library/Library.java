@@ -2,9 +2,15 @@ package ru.home.des.chat.library;
 
 public class Library {
     public static final String DELIMITER = "±";
+
+    private static final String REGISTRATION_REQUEST = "/reg_request";
+    private static final String REGISTRATION_ACCEPT = "/reg_accept";
+    private static final String REGISTRATION_DENIED = "/reg_denied";
+
     public static final String AUTH_REQUEST = "/auth_request";
     public static final String AUTH_ACCEPT = "/auth_accept";
     public static final String AUTH_DENIED = "/auth_denied";
+
     public static final String MSG_FORMAT_ERROR = "/msg_format_error";
 
     public static final String TYPE_BROADCAST = "/bcast";
@@ -12,6 +18,19 @@ public class Library {
     public static final String TYPE_PRIVATE_MESSAGE = "/private_msg";
 
     public static final String USER_LIST = "/user_list";
+
+    public static String getRegistrationRequest(String login, String password, String nickname){
+//        TODO password hash code
+        return REGISTRATION_REQUEST + DELIMITER + login + DELIMITER + password + DELIMITER + nickname;
+    }
+
+    public static String getRegistrationAccept(String nickname){
+        return REGISTRATION_ACCEPT + DELIMITER + nickname;
+    }
+
+    public static String getRegistrationDenied(){
+        return REGISTRATION_DENIED;
+    }
 
     public static String getAuthRequest(String login, String password) {
         return AUTH_REQUEST + DELIMITER + login + DELIMITER + password;
