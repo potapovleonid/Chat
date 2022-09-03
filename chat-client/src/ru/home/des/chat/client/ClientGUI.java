@@ -17,25 +17,37 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     /**
      * TODO add registration panel
      **/
-    private static final int WIDTH = 450;
+    private static final int WIDTH = 550;
     private static final int HEIGHT = 350;
 
     private final JTextArea log = new JTextArea();
-    private final JPanel panelTop = new JPanel(new GridLayout(2, 3));
+    //    private final JPanel panelTop = new JPanel(new GridLayout(3, 3));
+    private final JPanel panelTop = new JPanel(new GridLayout(3, 3));
     private final JTextField tfIPAddress = new JTextField("127.0.0.1");
     private final JTextField tfPort = new JTextField("8181");
     private final JCheckBox cbAlwaysOnTop = new JCheckBox("Always on top");
     private final JTextField tfLogin = new JTextField("leonid");
     private final JPasswordField tfPassword = new JPasswordField("leonid123");
     private final JButton btnLogin = new JButton("Login");
+    private final JButton btnRegistration = new JButton("New account");
 
     private final JPanel panelBottom = new JPanel(new BorderLayout());
     private final JButton btnDisconnect = new JButton("<html><b>Disconnect</b></html>");
     private final JTextField tfMessage = new JTextField();
     private final JButton btnSend = new JButton("Send");
 
+    private final String REGISTRATION_WINDOW_TITLE = "Registration new account";
+    private final JPanel panelRegTop = new JPanel(new GridLayout(3, 1));
+    private final JPanel panelRegBottom = new JPanel();
+    private final JTextField tfRegLogin = new JTextField("Your login");
+    private final JTextField tfRegPass = new JTextField("Your password");
+    private final JTextField tfRegNick = new JTextField("Your nickname");
+    private final JButton btnCreateAcc = new JButton("Create");
+
     private final DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm");
     private final String WINDOW_TITLE = "Chat";
+
+    private final JFrame registrFrame = new JFrame();
 
     private final JList<String> userList = new JList<>();
     private SocketThread socketThread;
@@ -64,6 +76,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         tfMessage.addActionListener(this);
         btnLogin.addActionListener(this);
         btnDisconnect.addActionListener(this);
+        btnRegistration.addActionListener(this);
         userList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -77,6 +90,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         panelTop.add(tfLogin);
         panelTop.add(tfPassword);
         panelTop.add(btnLogin);
+        panelTop.add(btnRegistration);
         panelBottom.add(btnDisconnect, BorderLayout.WEST);
         panelBottom.add(tfMessage, BorderLayout.CENTER);
         panelBottom.add(btnSend, BorderLayout.EAST);
@@ -93,6 +107,22 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         panelBottom.setVisible(false);
 
         setVisible(true);
+
+        registrFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        registrFrame.setLocationRelativeTo(null);
+        registrFrame.setSize(new Dimension(400, 130));
+        registrFrame.setTitle(REGISTRATION_WINDOW_TITLE);
+
+        panelRegTop.add(tfRegLogin);
+        panelRegTop.add(tfRegPass);
+        panelRegTop.add(tfRegNick);
+
+        panelRegBottom.add(btnCreateAcc);
+
+        registrFrame.add(panelRegTop, BorderLayout.NORTH);
+        registrFrame.add(panelRegBottom, BorderLayout.SOUTH);
+
+//        registrFrame.setVisible(true);
     }
 
     @Override
@@ -106,6 +136,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             connect();
         } else if (source == btnDisconnect) {
             socketThread.close();
+        } else if (source == btnCreateAcc) {
+
         } else {
             throw new RuntimeException("Unknown source: " + source);
         }
