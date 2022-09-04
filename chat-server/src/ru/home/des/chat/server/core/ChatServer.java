@@ -1,5 +1,6 @@
 package ru.home.des.chat.server.core;
 
+import org.postgresql.util.PSQLException;
 import ru.home.des.chat.library.Library;
 import ru.home.des.chat.network.ServerSocketThread;
 import ru.home.des.chat.network.ServerSocketThreadListener;
@@ -8,6 +9,7 @@ import ru.home.des.chat.network.SocketThreadListener;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.Vector;
 
 public class ChatServer implements ServerSocketThreadListener, SocketThreadListener {
@@ -81,6 +83,11 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
 
     private void handleNonAuthorizedMessage(ClientThread user, String msg) {
         String[] arr = msg.split(Library.DELIMITER);
+        if (arr[0].equals(Library.REGISTRATION_REQUEST)) {
+            user.sendMessage(SQLClient.addUser(arr[1], arr[2], arr[3]));
+            return;
+        }
+
         if (arr.length != 3 || !arr[0].equals(Library.AUTH_REQUEST)) {
             user.msgFormatError(msg);
             return;

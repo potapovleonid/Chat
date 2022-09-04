@@ -49,6 +49,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     private final JFrame registrFrame = new JFrame();
 
+    private boolean isRegisterProcess = false;
+
     private final JList<String> userList = new JList<>();
     private SocketThread socketThread;
 
@@ -77,6 +79,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         btnLogin.addActionListener(this);
         btnDisconnect.addActionListener(this);
         btnRegistration.addActionListener(this);
+        btnCreateAcc.addActionListener(this);
         userList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -136,8 +139,12 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             connect();
         } else if (source == btnDisconnect) {
             socketThread.close();
+        } else if (source == btnRegistration) {
+            isRegisterProcess = true;
+            registrFrame.setVisible(true);
+            connect();
         } else if (source == btnCreateAcc) {
-
+            sendRegistrationMessage();
         } else {
             throw new RuntimeException("Unknown source: " + source);
         }
@@ -162,6 +169,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             socketThread = new SocketThread(this, "Client", socket);
         } catch (IOException e) {
             showException(Thread.currentThread(), e);
+            registrFrame.setVisible(false);
         }
     }
 
@@ -176,6 +184,16 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             return;
         }
         socketThread.sendMessage(Library.getTypeBroadcastClient(msg));
+    }
+
+    public void sendRegistrationMessage() {
+        if (tfRegLogin.getText().equals("") && tfRegPass.getText().equals("") && tfRegNick.getText().equals("")) {
+            System.out.printf("login: %s\npass: %s\nnick: %s", tfRegLogin.getText(), tfRegPass.getText(), tfRegNick.getText());
+            showException(Thread.currentThread(), new Throwable("Enter text in all fields"));
+            return;
+        }
+        socketThread.sendMessage(
+                Library.getRegistrationRequest(tfRegLogin.getText(), tfRegPass.getText(), tfRegNick.getText()));
     }
 
     public void putLog(String msg) {
@@ -201,15 +219,17 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     @Override
     public void onSocketStop(SocketThread thread) {
-        putLog("Stop");
+        putLog("Server's connect stopped");
     }
 
     @Override
     public void onSocketReady(SocketThread thread, Socket socket) {
-        String login = tfLogin.getText();
-        String password = new String(tfPassword.getPassword());
-        thread.sendMessage(Library.getAuthRequest(login, password));
-        setVisibleTopPanel(!isVisible());
+        if (!isRegisterProcess) {
+            String login = tfLogin.getText();
+            String password = new String(tfPassword.getPassword());
+            thread.sendMessage(Library.getAuthRequest(login, password));
+            setVisibleTopPanel(!isVisible());
+        }
     }
 
     @Override
@@ -219,7 +239,9 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     @Override
     public void onSocketException(SocketThread thread, Exception exception) {
-        showException(thread, exception);
+        if (!exception.getMessage().equals("Socket closed")){
+            showException(thread, exception);
+        }
         setVisibleTopPanel(true);
     }
 
@@ -235,12 +257,27 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         String msgType = arrMsg[0];
 
         switch (msgType) {
+            case Library.REGISTRATION_ACCEPT:
+//                TODO
+                System.out.println(msg);
+                registrFrame.setVisible(false);
+                showException(socketThread, new Throwable("Account success registration"));
+                socketThread.close();
+                break;
+            case Library.REGISTRATION_DENIED:
+//                TODO
+                System.out.println(msg);
+                registrFrame.setVisible(false);
+                showException(socketThread, new Throwable("This login or password already use"));
+                socketThread.close();
+                break;
             case Library.AUTH_ACCEPT:
                 putLog("Welcome " + arrMsg[1]);
                 break;
             case Library.AUTH_DENIED:
                 showException(socketThread, new Throwable("Unknown login or password"));
                 setVisibleTopPanel(true);
+                break;
             case Library.MSG_FORMAT_ERROR:
                 putLog(msg);
                 socketThread.close();

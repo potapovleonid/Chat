@@ -44,10 +44,10 @@ public class SQLClient {
         try {
             int rows = statement.executeUpdate(query);
             if (rows != 0){
-                return Library.getRegistrationAccept(nickname);
+                return Library.getRegistrationAccept();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            return Library.getRegistrationDenied();
         }
         return null;
     }
