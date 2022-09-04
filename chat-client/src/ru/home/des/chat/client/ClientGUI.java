@@ -21,7 +21,6 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private static final int HEIGHT = 350;
 
     private final JTextArea log = new JTextArea();
-    //    private final JPanel panelTop = new JPanel(new GridLayout(3, 3));
     private final JPanel panelTop = new JPanel(new GridLayout(3, 3));
     private final JTextField tfIPAddress = new JTextField("127.0.0.1");
     private final JTextField tfPort = new JTextField("8181");
@@ -50,6 +49,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private final JFrame registrFrame = new JFrame();
 
     private boolean isRegisterProcess = false;
+    private boolean isNeedClearLogAfterRegister = false;
 
     private final JList<String> userList = new JList<>();
     private SocketThread socketThread;
@@ -104,7 +104,6 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         add(panelBottom, BorderLayout.SOUTH);
 
         log.setEditable(false);
-
         log.setVisible(false);
         userList.setVisible(false);
         panelBottom.setVisible(false);
@@ -124,8 +123,6 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
         registrFrame.add(panelRegTop, BorderLayout.NORTH);
         registrFrame.add(panelRegBottom, BorderLayout.SOUTH);
-
-//        registrFrame.setVisible(true);
     }
 
     @Override
@@ -142,15 +139,15 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         } else if (source == btnRegistration) {
             isRegisterProcess = true;
             registrFrame.setVisible(true);
-            connect();
         } else if (source == btnCreateAcc) {
+            connect();
             sendRegistrationMessage();
         } else {
             throw new RuntimeException("Unknown source: " + source);
         }
     }
 
-    public void showException(Thread t, Throwable e) {
+    private void showException(Thread t, Throwable e) {
         String msg;
         StackTraceElement[] ste = e.getStackTrace();
         if (ste.length == 0) {
@@ -163,6 +160,17 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         JOptionPane.showMessageDialog(null, msg, "Exception", JOptionPane.ERROR_MESSAGE);
     }
 
+    private void showInfo(Thread t, Throwable e) {
+        String msg;
+        StackTraceElement[] ste = e.getStackTrace();
+        if (ste.length == 0) {
+            msg = "Empty Stacktrace";
+        } else {
+            msg = e.getMessage();
+        }
+        JOptionPane.showMessageDialog(null, msg, "Information", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     private void connect() {
         try {
             Socket socket = new Socket(tfIPAddress.getText(), Integer.parseInt(tfPort.getText()));
@@ -173,7 +181,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         }
     }
 
-    public void sendMessage() {
+    private void sendMessage() {
         String msg = tfMessage.getText();
         if (msg.equals("")) return;
         tfMessage.setText("");
@@ -186,17 +194,22 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         socketThread.sendMessage(Library.getTypeBroadcastClient(msg));
     }
 
-    public void sendRegistrationMessage() {
+    private void sendRegistrationMessage() {
         if (tfRegLogin.getText().equals("") && tfRegPass.getText().equals("") && tfRegNick.getText().equals("")) {
-            System.out.printf("login: %s\npass: %s\nnick: %s", tfRegLogin.getText(), tfRegPass.getText(), tfRegNick.getText());
-            showException(Thread.currentThread(), new Throwable("Enter text in all fields"));
+            showInfo(Thread.currentThread(), new Throwable("Enter text in all fields"));
+            return;
+        }
+        if (tfRegLogin.getText().split(" ").length != 1
+                && 1 != tfRegPass.getText().split(" ").length
+                && tfRegNick.getText().split(" ").length != 1) {
+            showInfo(Thread.currentThread(), new Throwable("Your login, password or nickname isn't one word"));
             return;
         }
         socketThread.sendMessage(
-                Library.getRegistrationRequest(tfRegLogin.getText(), tfRegPass.getText(), tfRegNick.getText()));
+                Library.getRegistrationRequest(tfRegLogin.getText(), tfRegPass.getText().hashCode(), tfRegNick.getText()));
     }
 
-    public void putLog(String msg) {
+    private void putLog(String msg) {
         if ("".equals(msg)) return;
         SwingUtilities.invokeLater(() -> {
             log.append(msg + "\n");
@@ -219,7 +232,11 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     @Override
     public void onSocketStop(SocketThread thread) {
+        isRegisterProcess = false;
         putLog("Server's connect stopped");
+        if (isNeedClearLogAfterRegister) {
+            clearLog();
+        }
     }
 
     @Override
@@ -227,7 +244,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         if (!isRegisterProcess) {
             String login = tfLogin.getText();
             String password = new String(tfPassword.getPassword());
-            thread.sendMessage(Library.getAuthRequest(login, password));
+            thread.sendMessage(Library.getAuthRequest(login, password.hashCode()));
             setVisibleTopPanel(!isVisible());
         }
     }
@@ -239,17 +256,32 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     @Override
     public void onSocketException(SocketThread thread, Exception exception) {
-        if (!exception.getMessage().equals("Socket closed")){
+        if (exception.getMessage() != null && !exception.getMessage().equals("Socket closed")) {
             showException(thread, exception);
         }
         setVisibleTopPanel(true);
     }
 
-    public void setVisibleTopPanel(boolean vision) {
+    private void setVisibleTopPanel(boolean vision) {
         panelTop.setVisible(vision);
         panelBottom.setVisible(!vision);
         log.setVisible(!vision);
         userList.setVisible(!vision);
+    }
+
+    private void resultRegistration(String msg) {
+        registrFrame.setVisible(false);
+        isRegisterProcess = false;
+        showInfo(socketThread, new Throwable(msg));
+        isNeedClearLogAfterRegister = true;
+        socketThread.close();
+        socketThread.interrupt();
+    }
+
+    private void clearLog() {
+        SwingUtilities.invokeLater(() -> {
+            log.setText("");
+        });
     }
 
     private void parseMessage(String msg) {
@@ -258,24 +290,16 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
         switch (msgType) {
             case Library.REGISTRATION_ACCEPT:
-//                TODO
-                System.out.println(msg);
-                registrFrame.setVisible(false);
-                showException(socketThread, new Throwable("Account success registration"));
-                socketThread.close();
+                resultRegistration("Account success registration");
                 break;
             case Library.REGISTRATION_DENIED:
-//                TODO
-                System.out.println(msg);
-                registrFrame.setVisible(false);
-                showException(socketThread, new Throwable("This login or password already use"));
-                socketThread.close();
+                resultRegistration("This login or password already use");
                 break;
             case Library.AUTH_ACCEPT:
                 putLog("Welcome " + arrMsg[1]);
                 break;
             case Library.AUTH_DENIED:
-                showException(socketThread, new Throwable("Unknown login or password"));
+                showInfo(socketThread, new Throwable("Unknown login or password"));
                 setVisibleTopPanel(true);
                 break;
             case Library.MSG_FORMAT_ERROR:
@@ -300,6 +324,5 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         }
 
     }
-
 
 }

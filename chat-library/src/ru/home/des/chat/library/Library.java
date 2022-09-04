@@ -27,7 +27,7 @@ public class Library {
 
     public static final String USER_LIST = "/user_list";
 
-    public static String getRegistrationRequest(String login, String password, String nickname){
+    public static String getRegistrationRequest(String login, int password, String nickname){
 //        TODO password hash code
         return REGISTRATION_REQUEST + DELIMITER + login + DELIMITER + password + DELIMITER + nickname;
     }
@@ -40,7 +40,7 @@ public class Library {
         return REGISTRATION_DENIED;
     }
 
-    public static String getAuthRequest(String login, String password) {
+    public static String getAuthRequest(String login, int password) {
         return AUTH_REQUEST + DELIMITER + login + DELIMITER + password;
     }
 

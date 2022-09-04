@@ -1,6 +1,5 @@
 package ru.home.des.chat.server.core;
 
-import org.postgresql.util.PSQLException;
 import ru.home.des.chat.library.Library;
 import ru.home.des.chat.network.ServerSocketThread;
 import ru.home.des.chat.network.ServerSocketThreadListener;
@@ -9,7 +8,6 @@ import ru.home.des.chat.network.SocketThreadListener;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.SQLException;
 import java.util.Vector;
 
 public class ChatServer implements ServerSocketThreadListener, SocketThreadListener {
