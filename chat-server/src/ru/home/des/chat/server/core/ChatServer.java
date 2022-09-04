@@ -81,6 +81,11 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
 
     private void handleNonAuthorizedMessage(ClientThread user, String msg) {
         String[] arr = msg.split(Library.DELIMITER);
+        if (arr[0].equals(Library.REGISTRATION_REQUEST)) {
+            user.sendMessage(SQLClient.addUser(arr[1], arr[2], arr[3]));
+            return;
+        }
+
         if (arr.length != 3 || !arr[0].equals(Library.AUTH_REQUEST)) {
             user.msgFormatError(msg);
             return;
