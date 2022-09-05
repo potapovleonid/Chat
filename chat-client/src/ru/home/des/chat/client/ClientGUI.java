@@ -15,6 +15,14 @@ import java.util.Arrays;
 
 public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
     /**
+     * Authority window values
+     **/
+
+    private static final JFrame authorityFrame = new JFrame();
+//    TODO move authority field (log, pass, address, port) + buttons (register, login)
+
+
+    /**
      * Chat Frame values
      **/
     private static final int WIDTH = 550;
@@ -41,11 +49,10 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
 
     private final DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm");
 
-
     /**
-     * Registry Frame values
+     * Registry window values
      **/
-    private final JFrame registryFrame = new JFrame();
+    private final JWindow registryWindow = new JWindow();
 
     private final String REGISTRATION_WINDOW_TITLE = "Registration new account";
     private final JPanel panelRegTop = new JPanel(new GridLayout(3, 1));
@@ -53,11 +60,17 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     private final JTextField tfRegLogin = new JTextField("Your login");
     private final JTextField tfRegPass = new JTextField("Your password");
     private final JTextField tfRegNick = new JTextField("Your nickname");
-    private final JButton btnCreateAcc = new JButton("Create");
+    private final JButton btnRegCreateAcc = new JButton("<html><b>Create</b></html>");
+    private final JButton btnRegCancel = new JButton("Cancel");
 
     private boolean isRegisterProcess = false;
     private boolean isNeedClearLogAfterRegister = false;
 
+    /**
+     * Registry window values
+     **/
+
+    private final JWindow optionPanel = new JWindow();
 
     private SocketThread socketThread;
 
@@ -70,26 +83,27 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     private ClientGUI() {
         Thread.setDefaultUncaughtExceptionHandler(this);
         createChatFrame();
-        createRegistryFrame();
+        createRegistryWindow();
 //        TODO create authorization, settings frames
     }
 
-    private void createRegistryFrame() {
-        registryFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        registryFrame.setLocationRelativeTo(null);
-        registryFrame.setSize(new Dimension(400, 130));
-        registryFrame.setTitle(REGISTRATION_WINDOW_TITLE);
+    private void createRegistryWindow() {
+        registryWindow.setLocationRelativeTo(null);
+        registryWindow.setSize(new Dimension(400, 130));
 
-        btnCreateAcc.addActionListener(this);
+        btnRegCreateAcc.addActionListener(this);
+        btnRegCancel.addActionListener(this);
 
         panelRegTop.add(tfRegLogin);
         panelRegTop.add(tfRegPass);
         panelRegTop.add(tfRegNick);
 
-        panelRegBottom.add(btnCreateAcc);
+        panelRegBottom.add(btnRegCreateAcc);
+        panelRegBottom.add(btnRegCancel);
 
-        registryFrame.add(panelRegTop, BorderLayout.NORTH);
-        registryFrame.add(panelRegBottom, BorderLayout.SOUTH);
+
+        registryWindow.add(panelRegTop, BorderLayout.NORTH);
+        registryWindow.add(panelRegBottom, BorderLayout.SOUTH);
     }
 
     private void createChatFrame() {
@@ -154,13 +168,18 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             socketThread.close();
         } else if (source == btnRegistration) {
             chatFrame.setVisible(false);
-            registryFrame.setVisible(true);
+            registryWindow.setVisible(true);
             isRegisterProcess = true;
             connect();
-        } else if (source == btnCreateAcc) {
+        } else if (source == btnRegCreateAcc) {
             if (checkRegistryFields()) {
                 sendRegistrationMessage();
             }
+        } else if (source == btnRegCancel) {
+            socketThread.close();
+            isRegisterProcess = false;
+            registryWindow.setVisible(false);
+            chatFrame.setVisible(true);
         } else {
             throw new RuntimeException("Unknown source: " + source);
         }
@@ -196,7 +215,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             socketThread = new SocketThread(this, "Client", socket);
         } catch (IOException e) {
             showException(Thread.currentThread(), e);
-            registryFrame.setVisible(false);
+            registryWindow.setVisible(false);
             chatFrame.setVisible(true);
         }
     }
@@ -320,7 +339,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
                 resultRegistration("Account success registration");
                 clearRegistryFields();
                 chatFrame.setVisible(true);
-                registryFrame.setVisible(false);
+                registryWindow.setVisible(false);
                 isRegisterProcess = false;
                 socketThread.close();
                 break;
