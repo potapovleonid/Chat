@@ -113,6 +113,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             @Override
             public void mouseClicked(MouseEvent e) {
                 privateMessage = userList.getSelectedValue();
+                chatFrame.setTitle(WINDOW_TITLE + ": " + "You are now writing to PM for " + privateMessage);
             }
         });
 
@@ -152,11 +153,12 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         } else if (source == btnDisconnect) {
             socketThread.close();
         } else if (source == btnRegistration) {
-            isRegisterProcess = true;
+            chatFrame.setVisible(false);
             registryFrame.setVisible(true);
+            isRegisterProcess = true;
+            connect();
         } else if (source == btnCreateAcc) {
             if (checkRegistryFields()) {
-                connect();
                 sendRegistrationMessage();
             }
         } else {
@@ -195,6 +197,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         } catch (IOException e) {
             showException(Thread.currentThread(), e);
             registryFrame.setVisible(false);
+            chatFrame.setVisible(true);
         }
     }
 
@@ -206,6 +209,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         if (privateMessage != null) {
             socketThread.sendMessage(Library.getTypePrivateMessage(privateMessage, msg));
             privateMessage = null;
+            chatFrame.setTitle(WINDOW_TITLE);
             return;
         }
         socketThread.sendMessage(Library.getTypeBroadcastClient(msg));
@@ -291,12 +295,8 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     }
 
     private void resultRegistration(String msg) {
-        registryFrame.setVisible(false);
-        isRegisterProcess = false;
         showInfo(socketThread, new Throwable(msg));
         isNeedClearLogAfterRegister = true;
-        socketThread.close();
-        socketThread.interrupt();
     }
 
     private void clearLog() {
@@ -321,9 +321,11 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
                 clearRegistryFields();
                 chatFrame.setVisible(true);
                 registryFrame.setVisible(false);
+                isRegisterProcess = false;
+                socketThread.close();
                 break;
             case Library.REGISTRATION_DENIED:
-                resultRegistration("This login or password already use");
+                resultRegistration("This login password or nickname already use");
                 break;
             case Library.AUTH_ACCEPT:
                 putLog("Welcome " + arrMsg[1]);
