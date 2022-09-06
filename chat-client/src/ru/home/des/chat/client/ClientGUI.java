@@ -5,6 +5,7 @@ import ru.home.des.chat.network.SocketThread;
 import ru.home.des.chat.network.SocketThreadListener;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -18,7 +19,10 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
      * Authority window values
      **/
 
-    private static final JFrame authorityFrame = new JFrame();
+    private final JFrame authorityFrame = new JFrame();
+    private final JLabel lAuthDescription = new JLabel("Welcome on chat.\nPlease authority with you credentials");
+
+
 //    TODO move authority field (log, pass, address, port) + buttons (register, login)
 
 
@@ -52,17 +56,22 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     /**
      * Registry window values
      **/
-    private final JWindow registryWindow = new JWindow();
+//    private final JWindow registryWindow = new JWindow();
+    private final JFrame regFrame = new JFrame();
 
-    private final String REGISTRATION_WINDOW_TITLE = "Registration new account";
-    private final JPanel panelRegTop = new JPanel(new GridLayout(3, 1));
+    private final JPanel panelRegTop = new JPanel(new GridLayout(3, 2));
     private final JPanel panelRegBottom = new JPanel();
-    private final JTextField tfRegLogin = new JTextField("Your login");
-    private final JTextField tfRegPass = new JTextField("Your password");
-    private final JTextField tfRegNick = new JTextField("Your nickname");
+
+    private final JLabel lRegLogin = new JLabel("Login");
+    private final JTextField tfRegLogin = new JTextField("");
+    private final JLabel lRegPass = new JLabel("Password");
+    private final JTextField tfRegPass = new JTextField("");
+    private final JLabel lRegNick = new JLabel("Nickname");
+    private final JTextField tfRegNick = new JTextField("");
     private final JButton btnRegCreateAcc = new JButton("<html><b>Create</b></html>");
     private final JButton btnRegCancel = new JButton("Cancel");
 
+    private final Color colorBorderReg = new Color(245, 224, 166);
     private boolean isRegisterProcess = false;
     private boolean isNeedClearLogAfterRegister = false;
 
@@ -88,22 +97,38 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     }
 
     private void createRegistryWindow() {
-        registryWindow.setLocationRelativeTo(null);
-        registryWindow.setSize(new Dimension(400, 130));
+        regFrame.setTitle("Registration new account");
+        regFrame.setLocationRelativeTo(null);
+        regFrame.setSize(new Dimension(400, 175));
+        regFrame.setResizable(false);
+
+        regFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         btnRegCreateAcc.addActionListener(this);
         btnRegCancel.addActionListener(this);
 
+        lRegLogin.setHorizontalAlignment(JLabel.CENTER);
+        lRegPass.setHorizontalAlignment(JLabel.CENTER);
+        lRegNick.setHorizontalAlignment(JLabel.CENTER);
+
+        panelRegTop.add(lRegLogin);
         panelRegTop.add(tfRegLogin);
+        panelRegTop.add(lRegPass);
         panelRegTop.add(tfRegPass);
+        panelRegTop.add(lRegNick);
         panelRegTop.add(tfRegNick);
 
         panelRegBottom.add(btnRegCreateAcc);
         panelRegBottom.add(btnRegCancel);
 
+        panelRegTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        registryWindow.add(panelRegTop, BorderLayout.NORTH);
-        registryWindow.add(panelRegBottom, BorderLayout.SOUTH);
+        regFrame.getContentPane().setBackground(colorBorderReg);
+        panelRegTop.setBackground(colorBorderReg);
+        panelRegBottom.setBackground(colorBorderReg);
+
+        regFrame.add(panelRegTop, BorderLayout.NORTH);
+        regFrame.add(panelRegBottom, BorderLayout.SOUTH);
     }
 
     private void createChatFrame() {
@@ -168,7 +193,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             socketThread.close();
         } else if (source == btnRegistration) {
             chatFrame.setVisible(false);
-            registryWindow.setVisible(true);
+            regFrame.setVisible(true);
             isRegisterProcess = true;
             connect();
         } else if (source == btnRegCreateAcc) {
@@ -178,7 +203,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         } else if (source == btnRegCancel) {
             socketThread.close();
             isRegisterProcess = false;
-            registryWindow.setVisible(false);
+            regFrame.setVisible(false);
             chatFrame.setVisible(true);
         } else {
             throw new RuntimeException("Unknown source: " + source);
@@ -215,7 +240,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             socketThread = new SocketThread(this, "Client", socket);
         } catch (IOException e) {
             showException(Thread.currentThread(), e);
-            registryWindow.setVisible(false);
+            regFrame.setVisible(false);
             chatFrame.setVisible(true);
         }
     }
@@ -339,7 +364,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
                 resultRegistration("Account success registration");
                 clearRegistryFields();
                 chatFrame.setVisible(true);
-                registryWindow.setVisible(false);
+                regFrame.setVisible(false);
                 isRegisterProcess = false;
                 socketThread.close();
                 break;
