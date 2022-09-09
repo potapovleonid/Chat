@@ -19,8 +19,17 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
      * Authority window values
      **/
 
-    private final JFrame authorityFrame = new JFrame();
+    private final JFrame authFrame = new JFrame();
     private final JLabel lAuthDescription = new JLabel("Welcome on chat.\nPlease authority with you credentials");
+
+    private GroupLayout authLayout = new GroupLayout(authFrame.getContentPane());
+
+    private final JTextField tfAuthIPAddress = new JTextField("127.0.0.1");
+    private final JTextField tfAuthPort = new JTextField("8181");
+    private final JTextField tfAuthLogin = new JTextField("leonid");
+    private final JPasswordField tfAuthPassword = new JPasswordField("leonid123");
+    private final JButton btnAuthLogin = new JButton("Login");
+    private final JButton btnAuthRegistration = new JButton("New account");
 
 
 //    TODO move authority field (log, pass, address, port) + buttons (register, login)
@@ -35,14 +44,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
 
     private final JFrame chatFrame = new JFrame();
 
-    private final JPanel panelTop = new JPanel(new GridLayout(3, 3));
-    private final JTextField tfIPAddress = new JTextField("127.0.0.1");
-    private final JTextField tfPort = new JTextField("8181");
     private final JCheckBox cbAlwaysOnTop = new JCheckBox("Always on top");
-    private final JTextField tfLogin = new JTextField("leonid");
-    private final JPasswordField tfPassword = new JPasswordField("leonid123");
-    private final JButton btnLogin = new JButton("Login");
-    private final JButton btnRegistration = new JButton("New account");
 
     private final JPanel panelBottom = new JPanel(new BorderLayout());
     private final JTextArea log = new JTextArea();
@@ -56,7 +58,6 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     /**
      * Registry window values
      **/
-//    private final JWindow registryWindow = new JWindow();
     private final JFrame regFrame = new JFrame();
 
     private final JPanel panelRegTop = new JPanel(new GridLayout(3, 2));
@@ -76,7 +77,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     private boolean isNeedClearLogAfterRegister = false;
 
     /**
-     * Registry window values
+     * Settings window values
      **/
 
     private final JWindow optionPanel = new JWindow();
@@ -92,14 +93,53 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     private ClientGUI() {
         Thread.setDefaultUncaughtExceptionHandler(this);
         createChatFrame();
-        createRegistryWindow();
+        createRegistryFrame();
+        createAuthFrame();
 //        TODO create authorization, settings frames
     }
 
-    private void createRegistryWindow() {
+    public void createAuthFrame() {
+        authFrame.setTitle("Welcome to chat");
+        authFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        authFrame.setLocationRelativeTo(null);
+//        authFrame.setResizable(false);
+        authFrame.setSize(400, 500);
+
+        btnAuthRegistration.addActionListener(this);
+        btnAuthLogin.addActionListener(this);
+
+        authFrame.getContentPane().setLayout(authLayout);
+
+        authLayout.setAutoCreateGaps(true);
+        authLayout.setAutoCreateContainerGaps(true);
+
+        authLayout.setHorizontalGroup(authLayout.createSequentialGroup()
+                .addGroup(authLayout.createSequentialGroup()
+                        .addGroup(authLayout.createParallelGroup()
+                                .addComponent(tfAuthIPAddress)
+                                .addComponent(tfAuthLogin))
+                        .addGroup(authLayout.createParallelGroup()
+                                .addComponent(tfAuthPort)
+                                .addComponent(tfAuthPassword)))
+        );
+//        authLayout.linkSize(SwingConstants.HORIZONTAL, btnAuthLogin, btnAuthRegistration);
+        authLayout.setVerticalGroup(authLayout.createSequentialGroup()
+                .addGroup(authLayout.createSequentialGroup()
+                        .addGroup(authLayout.createParallelGroup()
+                                .addComponent(tfAuthIPAddress)
+                                .addComponent(tfAuthPort))
+                        .addGroup(authLayout.createParallelGroup()
+                                .addComponent(tfAuthLogin)
+                                .addComponent(tfAuthPassword)))
+        );
+
+        authFrame.setVisible(true);
+    }
+
+    private void createRegistryFrame() {
         regFrame.setTitle("Registration new account");
         regFrame.setLocationRelativeTo(null);
-        regFrame.setSize(new Dimension(400, 175));
+        regFrame.setSize(800, 175);
         regFrame.setResizable(false);
 
         regFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -123,10 +163,6 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
 
         panelRegTop.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        regFrame.getContentPane().setBackground(colorBorderReg);
-        panelRegTop.setBackground(colorBorderReg);
-        panelRegBottom.setBackground(colorBorderReg);
-
         regFrame.add(panelRegTop, BorderLayout.NORTH);
         regFrame.add(panelRegBottom, BorderLayout.SOUTH);
     }
@@ -145,9 +181,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         cbAlwaysOnTop.addActionListener(this);
         btnSend.addActionListener(this);
         tfMessage.addActionListener(this);
-        btnLogin.addActionListener(this);
         btnDisconnect.addActionListener(this);
-        btnRegistration.addActionListener(this);
         userList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -156,28 +190,18 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             }
         });
 
-        panelTop.add(tfIPAddress);
-        panelTop.add(tfPort);
-        panelTop.add(cbAlwaysOnTop);
-        panelTop.add(tfLogin);
-        panelTop.add(tfPassword);
-        panelTop.add(btnLogin);
-        panelTop.add(btnRegistration);
         panelBottom.add(btnDisconnect, BorderLayout.WEST);
         panelBottom.add(tfMessage, BorderLayout.CENTER);
         panelBottom.add(btnSend, BorderLayout.EAST);
 
         chatFrame.add(scrollLog, BorderLayout.CENTER);
         chatFrame.add(scrollUsers, BorderLayout.EAST);
-        chatFrame.add(panelTop, BorderLayout.NORTH);
         chatFrame.add(panelBottom, BorderLayout.SOUTH);
 
         log.setEditable(false);
         log.setVisible(false);
         userList.setVisible(false);
         panelBottom.setVisible(false);
-
-        chatFrame.setVisible(true);
     }
 
     @Override
@@ -187,11 +211,11 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             chatFrame.setAlwaysOnTop(cbAlwaysOnTop.isSelected());
         } else if (source == btnSend || source == tfMessage) {
             sendMessage();
-        } else if (source == btnLogin) {
+        } else if (source == btnAuthLogin) {
             connect();
         } else if (source == btnDisconnect) {
             socketThread.close();
-        } else if (source == btnRegistration) {
+        } else if (source == btnAuthRegistration) {
             chatFrame.setVisible(false);
             regFrame.setVisible(true);
             isRegisterProcess = true;
@@ -236,7 +260,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
 
     private void connect() {
         try {
-            Socket socket = new Socket(tfIPAddress.getText(), Integer.parseInt(tfPort.getText()));
+            Socket socket = new Socket(tfAuthIPAddress.getText(), Integer.parseInt(tfAuthPort.getText()));
             socketThread = new SocketThread(this, "Client", socket);
         } catch (IOException e) {
             showException(Thread.currentThread(), e);
@@ -311,10 +335,10 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     @Override
     public void onSocketReady(SocketThread thread, Socket socket) {
         if (!isRegisterProcess) {
-            String login = tfLogin.getText();
-            String password = new String(tfPassword.getPassword());
+            String login = tfAuthLogin.getText();
+            String password = new String(tfAuthPassword.getPassword());
             thread.sendMessage(Library.getAuthRequest(login, password.hashCode()));
-            setVisibleTopPanel(!panelTop.isVisible());
+//            setVisibleTopPanel(!panelTop.isVisible());
         }
     }
 
@@ -332,7 +356,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     }
 
     private void setVisibleTopPanel(boolean vision) {
-        panelTop.setVisible(vision);
+//        panelTop.setVisible(vision);
         panelBottom.setVisible(!vision);
         log.setVisible(!vision);
         userList.setVisible(!vision);
