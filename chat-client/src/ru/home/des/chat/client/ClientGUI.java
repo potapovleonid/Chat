@@ -20,7 +20,9 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
      **/
 
     private final JFrame authFrame = new JFrame();
-    private final JLabel lAuthDescription = new JLabel("Welcome on chat.\nPlease authority with you credentials");
+    private final JLabel lAuthDescription =
+            new JLabel("<html><p style='text-align: center'>Welcome on chat." +
+                    "<br>Please authority with you credentials or if you don't have one - click on 'New account'</p></html>");
 
     private GroupLayout authLayout = new GroupLayout(authFrame.getContentPane());
 
@@ -102,8 +104,15 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         authFrame.setTitle("Welcome to chat");
         authFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         authFrame.setLocationRelativeTo(null);
-//        authFrame.setResizable(false);
-        authFrame.setSize(400, 500);
+        authFrame.setResizable(false);
+        authFrame.setSize(550, 180);
+
+        tfAuthLogin.setHorizontalAlignment(SwingConstants.CENTER);
+        tfAuthPassword.setHorizontalAlignment(SwingConstants.CENTER);
+        tfAuthIPAddress.setHorizontalAlignment(SwingConstants.CENTER);
+        tfAuthPort.setHorizontalAlignment(SwingConstants.CENTER);
+
+        lAuthDescription.setHorizontalAlignment(SwingConstants.CENTER);
 
         btnAuthRegistration.addActionListener(this);
         btnAuthLogin.addActionListener(this);
@@ -113,24 +122,35 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         authLayout.setAutoCreateGaps(true);
         authLayout.setAutoCreateContainerGaps(true);
 
-        authLayout.setHorizontalGroup(authLayout.createSequentialGroup()
+        authLayout.setHorizontalGroup(authLayout.createParallelGroup()
                 .addGroup(authLayout.createSequentialGroup()
                         .addGroup(authLayout.createParallelGroup()
+                                .addComponent(lAuthDescription)))
+                .addGroup(authLayout.createSequentialGroup()
+                        .addGroup(authLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
                                 .addComponent(tfAuthIPAddress)
-                                .addComponent(tfAuthLogin))
-                        .addGroup(authLayout.createParallelGroup()
+                                .addComponent(tfAuthLogin)
+                                .addComponent(btnAuthLogin))
+                        .addGroup(authLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
                                 .addComponent(tfAuthPort)
-                                .addComponent(tfAuthPassword)))
+                                .addComponent(tfAuthPassword)
+                                .addComponent(btnAuthRegistration)))
         );
-//        authLayout.linkSize(SwingConstants.HORIZONTAL, btnAuthLogin, btnAuthRegistration);
+        authLayout.linkSize(SwingConstants.HORIZONTAL, btnAuthLogin, btnAuthRegistration);
         authLayout.setVerticalGroup(authLayout.createSequentialGroup()
+                .addGroup(authLayout.createSequentialGroup()
+                        .addGroup(authLayout.createParallelGroup()
+                                .addComponent(lAuthDescription)))
                 .addGroup(authLayout.createSequentialGroup()
                         .addGroup(authLayout.createParallelGroup()
                                 .addComponent(tfAuthIPAddress)
                                 .addComponent(tfAuthPort))
                         .addGroup(authLayout.createParallelGroup()
                                 .addComponent(tfAuthLogin)
-                                .addComponent(tfAuthPassword)))
+                                .addComponent(tfAuthPassword))
+                        .addGroup(authLayout.createParallelGroup()
+                                .addComponent(btnAuthLogin)
+                                .addComponent(btnAuthRegistration)))
         );
 
         authFrame.setVisible(true);
