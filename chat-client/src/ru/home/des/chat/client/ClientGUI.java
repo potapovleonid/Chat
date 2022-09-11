@@ -18,11 +18,10 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     /**
      * Authority window values
      **/
-
     private final JFrame authFrame = new JFrame();
     private final JLabel lAuthDescription =
-            new JLabel("<html><p style='text-align: center'>Welcome on chat." +
-                    "<br>Please authority with you credentials or if you don't have one - click on 'New account'</p></html>");
+            new JLabel("<html><p style='text-align: center'>Welcome on chat.<br>Please authority with " +
+                    "you credentials or if you don't have one - click on 'New account'</p></html>");
 
     private GroupLayout authLayout = new GroupLayout(authFrame.getContentPane());
 
@@ -32,10 +31,6 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     private final JPasswordField tfAuthPassword = new JPasswordField("leonid123");
     private final JButton btnAuthLogin = new JButton("Login");
     private final JButton btnAuthRegistration = new JButton("New account");
-
-
-//    TODO move authority field (log, pass, address, port) + buttons (register, login)
-
 
     /**
      * Chat Frame values
@@ -62,19 +57,23 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
      **/
     private final JFrame regFrame = new JFrame();
 
-    private final JPanel panelRegTop = new JPanel(new GridLayout(3, 2));
+    private final JPanel panelRegTop = new JPanel();
+    private final JPanel panelRegCenter = new JPanel(new GridLayout(3, 2));
     private final JPanel panelRegBottom = new JPanel();
+
+    private final JLabel lRegDescription =
+            new JLabel("<html><p style='text-align: center'>Input the credentials you want.<br>Each field " +
+                    "can contains one word without spaces.</p></html>");
 
     private final JLabel lRegLogin = new JLabel("Login");
     private final JTextField tfRegLogin = new JTextField("");
     private final JLabel lRegPass = new JLabel("Password");
-    private final JTextField tfRegPass = new JTextField("");
+    private final JPasswordField tfRegPass = new JPasswordField("");
     private final JLabel lRegNick = new JLabel("Nickname");
     private final JTextField tfRegNick = new JTextField("");
     private final JButton btnRegCreateAcc = new JButton("<html><b>Create</b></html>");
     private final JButton btnRegCancel = new JButton("Cancel");
 
-    private final Color colorBorderReg = new Color(245, 224, 166);
     private boolean isRegisterProcess = false;
     private boolean isNeedClearLogAfterRegister = false;
 
@@ -159,7 +158,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     private void createRegistryFrame() {
         regFrame.setTitle("Registration new account");
         regFrame.setLocationRelativeTo(null);
-        regFrame.setSize(800, 175);
+        regFrame.setSize(400, 200);
         regFrame.setResizable(false);
 
         regFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -171,19 +170,22 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         lRegPass.setHorizontalAlignment(JLabel.CENTER);
         lRegNick.setHorizontalAlignment(JLabel.CENTER);
 
-        panelRegTop.add(lRegLogin);
-        panelRegTop.add(tfRegLogin);
-        panelRegTop.add(lRegPass);
-        panelRegTop.add(tfRegPass);
-        panelRegTop.add(lRegNick);
-        panelRegTop.add(tfRegNick);
+        panelRegTop.add(lRegDescription);
+
+        panelRegCenter.add(lRegLogin);
+        panelRegCenter.add(tfRegLogin);
+        panelRegCenter.add(lRegPass);
+        panelRegCenter.add(tfRegPass);
+        panelRegCenter.add(lRegNick);
+        panelRegCenter.add(tfRegNick);
 
         panelRegBottom.add(btnRegCreateAcc);
         panelRegBottom.add(btnRegCancel);
 
-        panelRegTop.setBorder(new EmptyBorder(10, 10, 10, 10));
+        panelRegCenter.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         regFrame.add(panelRegTop, BorderLayout.NORTH);
+        regFrame.add(panelRegCenter, BorderLayout.CENTER);
         regFrame.add(panelRegBottom, BorderLayout.SOUTH);
     }
 
@@ -219,9 +221,6 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         chatFrame.add(panelBottom, BorderLayout.SOUTH);
 
         log.setEditable(false);
-        log.setVisible(false);
-        userList.setVisible(false);
-        panelBottom.setVisible(false);
     }
 
     @Override
@@ -236,8 +235,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         } else if (source == btnDisconnect) {
             socketThread.close();
         } else if (source == btnAuthRegistration) {
-            chatFrame.setVisible(false);
-            regFrame.setVisible(true);
+            hideAndVisibleFrames(authFrame, regFrame);
             isRegisterProcess = true;
             connect();
         } else if (source == btnRegCreateAcc) {
@@ -247,8 +245,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         } else if (source == btnRegCancel) {
             socketThread.close();
             isRegisterProcess = false;
-            regFrame.setVisible(false);
-            chatFrame.setVisible(true);
+            hideAndVisibleFrames(regFrame, authFrame);
         } else {
             throw new RuntimeException("Unknown source: " + source);
         }
@@ -284,8 +281,6 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             socketThread = new SocketThread(this, "Client", socket);
         } catch (IOException e) {
             showException(Thread.currentThread(), e);
-            regFrame.setVisible(false);
-            chatFrame.setVisible(true);
         }
     }
 
@@ -316,7 +311,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         if (tfRegLogin.getText().split(" ").length != 1
                 || 1 != tfRegPass.getText().split(" ").length
                 || tfRegNick.getText().split(" ").length != 1) {
-            showInfo(Thread.currentThread(), new Throwable("Your login, password or nickname isn't one word"));
+            showInfo(Thread.currentThread(), new Throwable("Input login or nickname isn't one word"));
             return false;
         }
         return true;
@@ -358,7 +353,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             String login = tfAuthLogin.getText();
             String password = new String(tfAuthPassword.getPassword());
             thread.sendMessage(Library.getAuthRequest(login, password.hashCode()));
-//            setVisibleTopPanel(!panelTop.isVisible());
+            hideAndVisibleFrames(authFrame, chatFrame);
         }
     }
 
@@ -372,14 +367,16 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         if (exception.getMessage() != null && !exception.getMessage().equals("Socket closed")) {
             showException(thread, exception);
         }
-        setVisibleTopPanel(true);
+        if (isRegisterProcess) {
+            hideAndVisibleFrames(regFrame, authFrame);
+        } else {
+            hideAndVisibleFrames(chatFrame, authFrame);
+        }
     }
 
-    private void setVisibleTopPanel(boolean vision) {
-//        panelTop.setVisible(vision);
-        panelBottom.setVisible(!vision);
-        log.setVisible(!vision);
-        userList.setVisible(!vision);
+    private void hideAndVisibleFrames(JFrame hideFrame, JFrame viewFrame) {
+        hideFrame.setVisible(false);
+        viewFrame.setVisible(true);
     }
 
     private void resultRegistration(String msg) {
@@ -407,20 +404,18 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             case Library.REGISTRATION_ACCEPT:
                 resultRegistration("Account success registration");
                 clearRegistryFields();
-                chatFrame.setVisible(true);
-                regFrame.setVisible(false);
+                hideAndVisibleFrames(regFrame, authFrame);
                 isRegisterProcess = false;
                 socketThread.close();
                 break;
             case Library.REGISTRATION_DENIED:
-                resultRegistration("This login password or nickname already use");
+                resultRegistration("Input login or nickname already use");
                 break;
             case Library.AUTH_ACCEPT:
                 putLog("Welcome " + arrMsg[1]);
                 break;
             case Library.AUTH_DENIED:
                 showInfo(socketThread, new Throwable("Unknown login or password"));
-                setVisibleTopPanel(true);
                 break;
             case Library.MSG_FORMAT_ERROR:
                 putLog(msg);
