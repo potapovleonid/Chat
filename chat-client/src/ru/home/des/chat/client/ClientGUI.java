@@ -15,6 +15,8 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
+    private final float version = 1.1f;
+
     /**
      * Authority window values
      **/
@@ -37,11 +39,9 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
      **/
     private static final int WIDTH = 550;
     private static final int HEIGHT = 350;
-    private final String WINDOW_TITLE = "Chat";
+    private final String WINDOW_TITLE = "Chat v" + version;
 
     private final JFrame chatFrame = new JFrame();
-
-    private final JCheckBox cbAlwaysOnTop = new JCheckBox("Always on top");
 
     private final JPanel panelBottom = new JPanel(new BorderLayout());
     private final JTextArea log = new JTextArea();
@@ -77,6 +77,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     private boolean isRegisterProcess = false;
     private boolean isNeedClearLogAfterRegister = false;
 
+    private final JCheckBox cbAlwaysOnTop = new JCheckBox("Always on top");
     /**
      * Settings window values
      **/
@@ -93,9 +94,9 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
 
     private ClientGUI() {
         Thread.setDefaultUncaughtExceptionHandler(this);
-        createChatFrame();
-        createRegistryFrame();
         createAuthFrame();
+        createRegistryFrame();
+        createChatFrame();
 //        TODO create authorization, settings frames
     }
 
@@ -235,9 +236,9 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         } else if (source == btnDisconnect) {
             socketThread.close();
         } else if (source == btnAuthRegistration) {
-            hideAndVisibleFrames(authFrame, regFrame);
-            isRegisterProcess = true;
-            connect();
+                hideAndVisibleFrames(authFrame, regFrame);
+                isRegisterProcess = true;
+                connect();
         } else if (source == btnRegCreateAcc) {
             if (checkRegistryFields()) {
                 sendRegistrationMessage();
@@ -280,7 +281,13 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             Socket socket = new Socket(tfAuthIPAddress.getText(), Integer.parseInt(tfAuthPort.getText()));
             socketThread = new SocketThread(this, "Client", socket);
         } catch (IOException e) {
-            showException(Thread.currentThread(), e);
+            if (e.getMessage().equals("Connection refused: connect")){
+                hideAndVisibleFrames(regFrame, authFrame);
+                showInfo(Thread.currentThread(), new Throwable("Server it's not run"));
+            } else {
+                showException(Thread.currentThread(), e);
+            }
+            isRegisterProcess = false;
         }
     }
 
@@ -311,7 +318,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         if (tfRegLogin.getText().split(" ").length != 1
                 || 1 != tfRegPass.getText().split(" ").length
                 || tfRegNick.getText().split(" ").length != 1) {
-            showInfo(Thread.currentThread(), new Throwable("Input login or nickname isn't one word"));
+            showInfo(Thread.currentThread(), new Throwable("Input login, password or nickname isn't one word"));
             return false;
         }
         return true;
