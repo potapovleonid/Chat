@@ -29,8 +29,8 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
 
     private final JTextField tfAuthIPAddress = new JTextField("127.0.0.1");
     private final JTextField tfAuthPort = new JTextField("8181");
-    private final JTextField tfAuthLogin = new JTextField("leonid");
-    private final JPasswordField tfAuthPassword = new JPasswordField("leonid123");
+    private final JTextField tfAuthLogin = new JTextField("");
+    private final JPasswordField tfAuthPassword = new JPasswordField("");
     private final JButton btnAuthLogin = new JButton("Login");
     private final JButton btnAuthRegistration = new JButton("New account");
 
