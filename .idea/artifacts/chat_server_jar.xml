@@ -5,6 +5,7 @@
       <element id="module-output" name="chat-server" />
       <element id="module-output" name="network" />
       <element id="module-output" name="chat-library" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/chat-server/postgresql-42.2.24_jdbcDriver.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>
