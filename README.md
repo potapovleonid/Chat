@@ -7,6 +7,8 @@ You need create PostgreSQL database with DBName 'chat-server' in database need c
 'login', 'password', 'nickname' all type's columns 'text' and they don't can is null. Column 'login' and 'nickname'
 musts be Primary keys
 
+Login and password to DB must be default 'postgres'
+
 The ability to use another database name and set different table name will be added later
 
 ## [Download server](https://github.com/potapovleonid/Chat/raw/master/out/artifacts/chat_server_jar/chat-server.jar)
