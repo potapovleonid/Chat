@@ -5,6 +5,7 @@ import ru.home.des.chat.network.SocketThread;
 import ru.home.des.chat.network.SocketThreadListener;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -13,45 +14,76 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
-public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
+public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
+    private final float version = 1.1f;
+
     /**
-     * TODO add registration panel
+     * Authority window values
+     **/
+    private final JFrame authFrame = new JFrame();
+    private final JLabel lAuthDescription =
+            new JLabel("<html><p style='text-align: center'>Welcome on chat.<br>Please authority with " +
+                    "you credentials or if you don't have one - click on 'New account'</p></html>");
+
+    private GroupLayout authLayout = new GroupLayout(authFrame.getContentPane());
+
+    private final JTextField tfAuthIPAddress = new JTextField("127.0.0.1");
+    private final JTextField tfAuthPort = new JTextField("8181");
+    private final JTextField tfAuthLogin = new JTextField("leonid");
+    private final JPasswordField tfAuthPassword = new JPasswordField("leonid123");
+    private final JButton btnAuthLogin = new JButton("Login");
+    private final JButton btnAuthRegistration = new JButton("New account");
+
+    /**
+     * Chat Frame values
      **/
     private static final int WIDTH = 550;
     private static final int HEIGHT = 350;
+    private final String WINDOW_TITLE = "Chat v" + version;
 
-    private final JTextArea log = new JTextArea();
-    private final JPanel panelTop = new JPanel(new GridLayout(3, 3));
-    private final JTextField tfIPAddress = new JTextField("127.0.0.1");
-    private final JTextField tfPort = new JTextField("8181");
-    private final JCheckBox cbAlwaysOnTop = new JCheckBox("Always on top");
-    private final JTextField tfLogin = new JTextField("leonid");
-    private final JPasswordField tfPassword = new JPasswordField("leonid123");
-    private final JButton btnLogin = new JButton("Login");
-    private final JButton btnRegistration = new JButton("New account");
+    private final JFrame chatFrame = new JFrame();
 
     private final JPanel panelBottom = new JPanel(new BorderLayout());
+    private final JTextArea log = new JTextArea();
+    private final JList<String> userList = new JList<>();
     private final JButton btnDisconnect = new JButton("<html><b>Disconnect</b></html>");
     private final JTextField tfMessage = new JTextField();
     private final JButton btnSend = new JButton("Send");
 
-    private final String REGISTRATION_WINDOW_TITLE = "Registration new account";
-    private final JPanel panelRegTop = new JPanel(new GridLayout(3, 1));
-    private final JPanel panelRegBottom = new JPanel();
-    private final JTextField tfRegLogin = new JTextField("Your login");
-    private final JTextField tfRegPass = new JTextField("Your password");
-    private final JTextField tfRegNick = new JTextField("Your nickname");
-    private final JButton btnCreateAcc = new JButton("Create");
-
     private final DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm");
-    private final String WINDOW_TITLE = "Chat";
 
-    private final JFrame registrFrame = new JFrame();
+    /**
+     * Registry window values
+     **/
+    private final JFrame regFrame = new JFrame();
+
+    private final JPanel panelRegTop = new JPanel();
+    private final JPanel panelRegCenter = new JPanel(new GridLayout(3, 2));
+    private final JPanel panelRegBottom = new JPanel();
+
+    private final JLabel lRegDescription =
+            new JLabel("<html><p style='text-align: center'>Input the credentials you want.<br>Each field " +
+                    "can contains one word without spaces.</p></html>");
+
+    private final JLabel lRegLogin = new JLabel("Login");
+    private final JTextField tfRegLogin = new JTextField("");
+    private final JLabel lRegPass = new JLabel("Password");
+    private final JPasswordField tfRegPass = new JPasswordField("");
+    private final JLabel lRegNick = new JLabel("Nickname");
+    private final JTextField tfRegNick = new JTextField("");
+    private final JButton btnRegCreateAcc = new JButton("<html><b>Create</b></html>");
+    private final JButton btnRegCancel = new JButton("Cancel");
 
     private boolean isRegisterProcess = false;
     private boolean isNeedClearLogAfterRegister = false;
 
-    private final JList<String> userList = new JList<>();
+    private final JCheckBox cbAlwaysOnTop = new JCheckBox("Always on top");
+    /**
+     * Settings window values
+     **/
+
+    private final JWindow optionPanel = new JWindow();
+
     private SocketThread socketThread;
 
     private String privateMessage;
@@ -62,86 +94,159 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     private ClientGUI() {
         Thread.setDefaultUncaughtExceptionHandler(this);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setSize(WIDTH, HEIGHT);
-        setTitle(WINDOW_TITLE);
+        createAuthFrame();
+        createRegistryFrame();
+        createChatFrame();
+//        TODO create authorization, settings frames
+    }
+
+    public void createAuthFrame() {
+        authFrame.setTitle("Welcome to chat");
+        authFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        authFrame.setLocationRelativeTo(null);
+        authFrame.setResizable(false);
+        authFrame.setSize(550, 180);
+
+        tfAuthLogin.setHorizontalAlignment(SwingConstants.CENTER);
+        tfAuthPassword.setHorizontalAlignment(SwingConstants.CENTER);
+        tfAuthIPAddress.setHorizontalAlignment(SwingConstants.CENTER);
+        tfAuthPort.setHorizontalAlignment(SwingConstants.CENTER);
+
+        lAuthDescription.setHorizontalAlignment(SwingConstants.CENTER);
+
+        btnAuthRegistration.addActionListener(this);
+        btnAuthLogin.addActionListener(this);
+
+        authFrame.getContentPane().setLayout(authLayout);
+
+        authLayout.setAutoCreateGaps(true);
+        authLayout.setAutoCreateContainerGaps(true);
+
+        authLayout.setHorizontalGroup(authLayout.createParallelGroup()
+                .addGroup(authLayout.createSequentialGroup()
+                        .addGroup(authLayout.createParallelGroup()
+                                .addComponent(lAuthDescription)))
+                .addGroup(authLayout.createSequentialGroup()
+                        .addGroup(authLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                                .addComponent(tfAuthIPAddress)
+                                .addComponent(tfAuthLogin)
+                                .addComponent(btnAuthLogin))
+                        .addGroup(authLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                                .addComponent(tfAuthPort)
+                                .addComponent(tfAuthPassword)
+                                .addComponent(btnAuthRegistration)))
+        );
+        authLayout.linkSize(SwingConstants.HORIZONTAL, btnAuthLogin, btnAuthRegistration);
+        authLayout.setVerticalGroup(authLayout.createSequentialGroup()
+                .addGroup(authLayout.createSequentialGroup()
+                        .addGroup(authLayout.createParallelGroup()
+                                .addComponent(lAuthDescription)))
+                .addGroup(authLayout.createSequentialGroup()
+                        .addGroup(authLayout.createParallelGroup()
+                                .addComponent(tfAuthIPAddress)
+                                .addComponent(tfAuthPort))
+                        .addGroup(authLayout.createParallelGroup()
+                                .addComponent(tfAuthLogin)
+                                .addComponent(tfAuthPassword))
+                        .addGroup(authLayout.createParallelGroup()
+                                .addComponent(btnAuthLogin)
+                                .addComponent(btnAuthRegistration)))
+        );
+
+        authFrame.setVisible(true);
+    }
+
+    private void createRegistryFrame() {
+        regFrame.setTitle("Registration new account");
+        regFrame.setLocationRelativeTo(null);
+        regFrame.setSize(400, 200);
+        regFrame.setResizable(false);
+
+        regFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+        btnRegCreateAcc.addActionListener(this);
+        btnRegCancel.addActionListener(this);
+
+        lRegLogin.setHorizontalAlignment(JLabel.CENTER);
+        lRegPass.setHorizontalAlignment(JLabel.CENTER);
+        lRegNick.setHorizontalAlignment(JLabel.CENTER);
+
+        panelRegTop.add(lRegDescription);
+
+        panelRegCenter.add(lRegLogin);
+        panelRegCenter.add(tfRegLogin);
+        panelRegCenter.add(lRegPass);
+        panelRegCenter.add(tfRegPass);
+        panelRegCenter.add(lRegNick);
+        panelRegCenter.add(tfRegNick);
+
+        panelRegBottom.add(btnRegCreateAcc);
+        panelRegBottom.add(btnRegCancel);
+
+        panelRegCenter.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        regFrame.add(panelRegTop, BorderLayout.NORTH);
+        regFrame.add(panelRegCenter, BorderLayout.CENTER);
+        regFrame.add(panelRegBottom, BorderLayout.SOUTH);
+    }
+
+    private void createChatFrame() {
+        chatFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        chatFrame.setLocationRelativeTo(null);
+        chatFrame.setSize(WIDTH, HEIGHT);
+        chatFrame.setTitle(WINDOW_TITLE);
 
         JScrollPane scrollLog = new JScrollPane(log);
         JScrollPane scrollUsers = new JScrollPane(userList);
 
         scrollUsers.setPreferredSize(new Dimension(100, 0));
 
-// Adding listeners for buttons and objects
         cbAlwaysOnTop.addActionListener(this);
         btnSend.addActionListener(this);
         tfMessage.addActionListener(this);
-        btnLogin.addActionListener(this);
         btnDisconnect.addActionListener(this);
-        btnRegistration.addActionListener(this);
-        btnCreateAcc.addActionListener(this);
         userList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 privateMessage = userList.getSelectedValue();
+                chatFrame.setTitle(WINDOW_TITLE + ": " + "You are now writing to PM for " + privateMessage);
             }
         });
 
-        panelTop.add(tfIPAddress);
-        panelTop.add(tfPort);
-        panelTop.add(cbAlwaysOnTop);
-        panelTop.add(tfLogin);
-        panelTop.add(tfPassword);
-        panelTop.add(btnLogin);
-        panelTop.add(btnRegistration);
         panelBottom.add(btnDisconnect, BorderLayout.WEST);
         panelBottom.add(tfMessage, BorderLayout.CENTER);
         panelBottom.add(btnSend, BorderLayout.EAST);
 
-        add(scrollLog, BorderLayout.CENTER);
-        add(scrollUsers, BorderLayout.EAST);
-        add(panelTop, BorderLayout.NORTH);
-        add(panelBottom, BorderLayout.SOUTH);
+        chatFrame.add(scrollLog, BorderLayout.CENTER);
+        chatFrame.add(scrollUsers, BorderLayout.EAST);
+        chatFrame.add(panelBottom, BorderLayout.SOUTH);
 
         log.setEditable(false);
-        log.setVisible(false);
-        userList.setVisible(false);
-        panelBottom.setVisible(false);
-
-        setVisible(true);
-
-        registrFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        registrFrame.setLocationRelativeTo(null);
-        registrFrame.setSize(new Dimension(400, 130));
-        registrFrame.setTitle(REGISTRATION_WINDOW_TITLE);
-
-        panelRegTop.add(tfRegLogin);
-        panelRegTop.add(tfRegPass);
-        panelRegTop.add(tfRegNick);
-
-        panelRegBottom.add(btnCreateAcc);
-
-        registrFrame.add(panelRegTop, BorderLayout.NORTH);
-        registrFrame.add(panelRegBottom, BorderLayout.SOUTH);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
         if (source == cbAlwaysOnTop) {
-            setAlwaysOnTop(cbAlwaysOnTop.isSelected());
+            chatFrame.setAlwaysOnTop(cbAlwaysOnTop.isSelected());
         } else if (source == btnSend || source == tfMessage) {
             sendMessage();
-        } else if (source == btnLogin) {
+        } else if (source == btnAuthLogin) {
             connect();
         } else if (source == btnDisconnect) {
             socketThread.close();
-        } else if (source == btnRegistration) {
-            isRegisterProcess = true;
-            registrFrame.setVisible(true);
-        } else if (source == btnCreateAcc) {
-            connect();
-            sendRegistrationMessage();
+        } else if (source == btnAuthRegistration) {
+                hideAndVisibleFrames(authFrame, regFrame);
+                isRegisterProcess = true;
+                connect();
+        } else if (source == btnRegCreateAcc) {
+            if (checkRegistryFields()) {
+                sendRegistrationMessage();
+            }
+        } else if (source == btnRegCancel) {
+            socketThread.close();
+            isRegisterProcess = false;
+            hideAndVisibleFrames(regFrame, authFrame);
         } else {
             throw new RuntimeException("Unknown source: " + source);
         }
@@ -173,11 +278,16 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     private void connect() {
         try {
-            Socket socket = new Socket(tfIPAddress.getText(), Integer.parseInt(tfPort.getText()));
+            Socket socket = new Socket(tfAuthIPAddress.getText(), Integer.parseInt(tfAuthPort.getText()));
             socketThread = new SocketThread(this, "Client", socket);
         } catch (IOException e) {
-            showException(Thread.currentThread(), e);
-            registrFrame.setVisible(false);
+            if (e.getMessage().equals("Connection refused: connect")){
+                hideAndVisibleFrames(regFrame, authFrame);
+                showInfo(Thread.currentThread(), new Throwable("Server it's not run"));
+            } else {
+                showException(Thread.currentThread(), e);
+            }
+            isRegisterProcess = false;
         }
     }
 
@@ -189,24 +299,29 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         if (privateMessage != null) {
             socketThread.sendMessage(Library.getTypePrivateMessage(privateMessage, msg));
             privateMessage = null;
+            chatFrame.setTitle(WINDOW_TITLE);
             return;
         }
         socketThread.sendMessage(Library.getTypeBroadcastClient(msg));
     }
 
     private void sendRegistrationMessage() {
-        if (tfRegLogin.getText().equals("") && tfRegPass.getText().equals("") && tfRegNick.getText().equals("")) {
-            showInfo(Thread.currentThread(), new Throwable("Enter text in all fields"));
-            return;
-        }
-        if (tfRegLogin.getText().split(" ").length != 1
-                && 1 != tfRegPass.getText().split(" ").length
-                && tfRegNick.getText().split(" ").length != 1) {
-            showInfo(Thread.currentThread(), new Throwable("Your login, password or nickname isn't one word"));
-            return;
-        }
         socketThread.sendMessage(
                 Library.getRegistrationRequest(tfRegLogin.getText(), tfRegPass.getText().hashCode(), tfRegNick.getText()));
+    }
+
+    private boolean checkRegistryFields() {
+        if (tfRegLogin.getText().equals("") && tfRegPass.getText().equals("") && tfRegNick.getText().equals("")) {
+            showInfo(Thread.currentThread(), new Throwable("Enter text in all fields"));
+            return false;
+        }
+        if (tfRegLogin.getText().split(" ").length != 1
+                || 1 != tfRegPass.getText().split(" ").length
+                || tfRegNick.getText().split(" ").length != 1) {
+            showInfo(Thread.currentThread(), new Throwable("Input login, password or nickname isn't one word"));
+            return false;
+        }
+        return true;
     }
 
     private void putLog(String msg) {
@@ -242,10 +357,10 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     @Override
     public void onSocketReady(SocketThread thread, Socket socket) {
         if (!isRegisterProcess) {
-            String login = tfLogin.getText();
-            String password = new String(tfPassword.getPassword());
+            String login = tfAuthLogin.getText();
+            String password = new String(tfAuthPassword.getPassword());
             thread.sendMessage(Library.getAuthRequest(login, password.hashCode()));
-            setVisibleTopPanel(!isVisible());
+            hideAndVisibleFrames(authFrame, chatFrame);
         }
     }
 
@@ -259,29 +374,33 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         if (exception.getMessage() != null && !exception.getMessage().equals("Socket closed")) {
             showException(thread, exception);
         }
-        setVisibleTopPanel(true);
+        if (isRegisterProcess) {
+            hideAndVisibleFrames(regFrame, authFrame);
+        } else {
+            hideAndVisibleFrames(chatFrame, authFrame);
+        }
     }
 
-    private void setVisibleTopPanel(boolean vision) {
-        panelTop.setVisible(vision);
-        panelBottom.setVisible(!vision);
-        log.setVisible(!vision);
-        userList.setVisible(!vision);
+    private void hideAndVisibleFrames(JFrame hideFrame, JFrame viewFrame) {
+        hideFrame.setVisible(false);
+        viewFrame.setVisible(true);
     }
 
     private void resultRegistration(String msg) {
-        registrFrame.setVisible(false);
-        isRegisterProcess = false;
         showInfo(socketThread, new Throwable(msg));
         isNeedClearLogAfterRegister = true;
-        socketThread.close();
-        socketThread.interrupt();
     }
 
     private void clearLog() {
         SwingUtilities.invokeLater(() -> {
             log.setText("");
         });
+    }
+
+    private void clearRegistryFields() {
+        tfRegLogin.setText("");
+        tfRegPass.setText("");
+        tfRegNick.setText("");
     }
 
     private void parseMessage(String msg) {
@@ -291,16 +410,19 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         switch (msgType) {
             case Library.REGISTRATION_ACCEPT:
                 resultRegistration("Account success registration");
+                clearRegistryFields();
+                hideAndVisibleFrames(regFrame, authFrame);
+                isRegisterProcess = false;
+                socketThread.close();
                 break;
             case Library.REGISTRATION_DENIED:
-                resultRegistration("This login or password already use");
+                resultRegistration("Input login or nickname already use");
                 break;
             case Library.AUTH_ACCEPT:
                 putLog("Welcome " + arrMsg[1]);
                 break;
             case Library.AUTH_DENIED:
                 showInfo(socketThread, new Throwable("Unknown login or password"));
-                setVisibleTopPanel(true);
                 break;
             case Library.MSG_FORMAT_ERROR:
                 putLog(msg);
