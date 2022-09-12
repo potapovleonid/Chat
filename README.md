@@ -9,8 +9,11 @@ musts be Primary keys
 
 The ability to use another database name and set different table name will be added later
 
+## [Download server](https://github.com/potapovleonid/Chat/raw/master/out/artifacts/chat_server_jar/chat-server.jar)
+
 ***
-##Info for client
+
+## Info for client
 Creating account's user uses only one word input.
 >Login: Leonid <br>
 >Password: Password <br>
@@ -34,3 +37,5 @@ After that you will see info in title app
 ![show info about writing in pm](https://github.com/potapovleonid/Chat/raw/master/img/show_info_about_writing_in_pm.jpg)
 
 Messages which you will get will be marked [PM]
+
+## [Download client v1.1](https://github.com/potapovleonid/Chat/raw/master/out/artifacts/chat_client_jar/chat-client.jar)
