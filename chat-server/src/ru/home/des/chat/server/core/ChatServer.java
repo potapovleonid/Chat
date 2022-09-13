@@ -6,6 +6,7 @@ import ru.home.des.chat.network.ServerSocketThreadListener;
 import ru.home.des.chat.network.SocketThread;
 import ru.home.des.chat.network.SocketThreadListener;
 
+import javax.swing.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
@@ -15,13 +16,22 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     private ServerSocketThread server;
     private final Vector<SocketThread> allUsers = new Vector<>();
 
+    private String IPDB;
+    private String nameDB;
+    private String loginDB;
+    private String passwordDB;
+
     private final ChatServerListener listener;
 
     public ChatServer(ChatServerListener listener) {
         this.listener = listener;
     }
 
-    public void start(int port) {
+    public void start(int port, String IPDB, String nameDB ,String loginDB, String passwordDB) {
+        this.IPDB = IPDB;
+        this.nameDB = nameDB;
+        this.loginDB = loginDB;
+        this.passwordDB = passwordDB;
         if (server == null || !server.isAlive()) {
             server = new ServerSocketThread(this, "Server", port, 2000);
             putLog(String.format("Server started at port: %d", port));
@@ -135,7 +145,13 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
 
     @Override
     public synchronized void onServerStart(ServerSocketThread thread) {
-        SQLClient.connect();
+        try {
+            SQLClient.connect(IPDB, nameDB, loginDB, passwordDB);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Credentials for connect DB incorrectly",
+                    "Wrong credentials", JOptionPane.ERROR_MESSAGE);
+            stop();
+        }
         putLog("Server started");
     }
 

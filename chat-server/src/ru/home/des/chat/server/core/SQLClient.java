@@ -1,6 +1,7 @@
 package ru.home.des.chat.server.core;
 
 import ru.home.des.chat.library.Library;
+
 import java.sql.*;
 
 public class SQLClient {
@@ -8,29 +9,30 @@ public class SQLClient {
     private static Connection connection;
     private static Statement statement;
 
-    synchronized static void connect(){
+    synchronized static void connect(String ipDB, String nameDB, String login, String password) {
         try {
-            String url = "jdbc:postgresql://localhost/chat-server";
-
-            connection = DriverManager.getConnection(url, "postgres", "postgres");
+            String url = String.format("jdbc:postgresql://%s/%s", ipDB, nameDB);
+            connection = DriverManager.getConnection(url, login, password);
             statement = connection.createStatement();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    synchronized static void disconnect(){
+    synchronized static void disconnect() {
         try {
-            connection.close();
+            if (connection != null) {
+                connection.close();
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    synchronized static String getNickname(String login, String password){
+    synchronized static String getNickname(String login, String password) {
         String query = String.format("SELECT nickname FROM users_tbl WHERE login='%s' and password='%s'", login, password);
         try (ResultSet set = statement.executeQuery(query)) {
-            if (set.next()){
+            if (set.next()) {
                 return set.getString(1);
             }
         } catch (SQLException e) {
@@ -39,11 +41,11 @@ public class SQLClient {
         return null;
     }
 
-    synchronized static String addUser(String login, String password, String nickname){
+    synchronized static String addUser(String login, String password, String nickname) {
         String query = String.format("INSERT INTO users_tbl values ('%s', '%s', '%s')", login, password, nickname);
         try {
             int rows = statement.executeUpdate(query);
-            if (rows != 0){
+            if (rows != 0) {
                 return Library.getRegistrationAccept();
             }
         } catch (SQLException e) {
