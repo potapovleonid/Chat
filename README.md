@@ -9,7 +9,7 @@ You need to create PostgreSQL database with any database name, in database need 
 'login', 'password', 'nickname' all type's 'text' and these columns don't can be is null. Column 'login' and 'nickname'
 musts be Primary keys. If you want to use script ↓ you still need to create a DB.
 
-##[Script for create table with constraints](https://github.com/potapovleonid/Chat/raw/master/chat-server/create_table.sql)
+## [Script for create table with constraints](https://github.com/potapovleonid/Chat/raw/master/chat-server/create_table.sql)
 
 ### What new in v1.1
 Added functional input any database name or IP address, now you can set port for chat server.
