@@ -95,11 +95,6 @@ public class ServerGUI extends JFrame implements ActionListener, Thread.Uncaught
                         "DB connection parameters", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-//            } else if (tfPortServer.getValue() || Integer.parseInt(tfPortServer.getText()) <= 0) {
-//                JOptionPane.showMessageDialog(null, "Server port is empty or incorrectly",
-//                        "Server port", JOptionPane.INFORMATION_MESSAGE);
-//                return;
-//            }
             chatServer.start((Integer) tfPortServer.getValue(), tfIPAddress.getText(), tfDBName.getText(),
                     tfLogin.getText(), String.copyValueOf(tfPassword.getPassword()));
         } else if (source == btnStop) {

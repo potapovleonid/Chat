@@ -27,9 +27,13 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
 
     private GroupLayout authLayout = new GroupLayout(authFrame.getContentPane());
 
+    private final JLabel lAuthIPAddress = new JLabel("Server's ip address");
     private final JTextField tfAuthIPAddress = new JTextField("127.0.0.1");
+    private final JLabel lAuthPort = new JLabel("Server's port");
     private final JTextField tfAuthPort = new JTextField("8181");
+    private final JLabel lAuthLogin = new JLabel("Login");
     private final JTextField tfAuthLogin = new JTextField("");
+    private final JLabel lAuthPassword = new JLabel("Password");
     private final JPasswordField tfAuthPassword = new JPasswordField("");
     private final JButton btnAuthLogin = new JButton("Login");
     private final JButton btnAuthRegistration = new JButton("New account");
@@ -97,7 +101,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         createAuthFrame();
         createRegistryFrame();
         createChatFrame();
-//        TODO create authorization, settings frames
+//        TODO create settings frames
     }
 
     public void createAuthFrame() {
@@ -105,7 +109,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         authFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         authFrame.setLocationRelativeTo(null);
         authFrame.setResizable(false);
-        authFrame.setSize(550, 180);
+        authFrame.setSize(550, 225);
 
         tfAuthLogin.setHorizontalAlignment(SwingConstants.CENTER);
         tfAuthPassword.setHorizontalAlignment(SwingConstants.CENTER);
@@ -128,11 +132,15 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
                                 .addComponent(lAuthDescription)))
                 .addGroup(authLayout.createSequentialGroup()
                         .addGroup(authLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                                .addComponent(lAuthIPAddress)
                                 .addComponent(tfAuthIPAddress)
+                                .addComponent(lAuthLogin)
                                 .addComponent(tfAuthLogin)
                                 .addComponent(btnAuthLogin))
                         .addGroup(authLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                                .addComponent(lAuthPort)
                                 .addComponent(tfAuthPort)
+                                .addComponent(lAuthPassword)
                                 .addComponent(tfAuthPassword)
                                 .addComponent(btnAuthRegistration)))
         );
@@ -143,8 +151,14 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
                                 .addComponent(lAuthDescription)))
                 .addGroup(authLayout.createSequentialGroup()
                         .addGroup(authLayout.createParallelGroup()
+                                .addComponent(lAuthIPAddress)
+                                .addComponent(lAuthPort))
+                        .addGroup(authLayout.createParallelGroup()
                                 .addComponent(tfAuthIPAddress)
                                 .addComponent(tfAuthPort))
+                        .addGroup(authLayout.createParallelGroup()
+                                .addComponent(lAuthLogin)
+                                .addComponent(lAuthPassword))
                         .addGroup(authLayout.createParallelGroup()
                                 .addComponent(tfAuthLogin)
                                 .addComponent(tfAuthPassword))
