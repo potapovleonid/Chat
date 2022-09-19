@@ -47,9 +47,10 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
 
     private final JFrame chatFrame = new JFrame();
 
-    private final JPanel panelBottom = new JPanel(new BorderLayout());
+    private final JPanel panelBottom = new JPanel(new GridLayout(2, 2));
     private final JTextArea log = new JTextArea();
     private final JList<String> userList = new JList<>();
+    private final JButton btnSettings = new JButton("Settings");
     private final JButton btnDisconnect = new JButton("<html><b>Disconnect</b></html>");
     private final JTextField tfMessage = new JTextField();
     private final JButton btnSend = new JButton("Send");
@@ -81,15 +82,20 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
     private boolean isRegisterProcess = false;
     private boolean isNeedClearLogAfterRegister = false;
 
-    private final JCheckBox cbAlwaysOnTop = new JCheckBox("Always on top");
     /**
      * Settings window values
      **/
 
-    private final JWindow optionPanel = new JWindow();
+    private final JFrame settingsFrame = new JFrame();
+    private final JPanel panelSettings = new JPanel(new GridLayout(6,1));
+    private final JCheckBox cbSettingsAlwaysOnTop = new JCheckBox("Always on top");
+    private final JCheckBox cbSettingsVisionBroadcastMessage = new JCheckBox("Vision broadcast message");
+    private final JLabel lSettingsNewNickname = new JLabel("Your new nickname");
+    private final JTextField flSettingsNewNickname = new JTextField();
+    private final JButton btnSettingsChangeNickname = new JButton("Change");
+    private final JButton btnSettingsCancel = new JButton("Cancel");
 
     private SocketThread socketThread;
-
     private String privateMessage;
 
     public static void main(String[] args) {
@@ -101,7 +107,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         createAuthFrame();
         createRegistryFrame();
         createChatFrame();
-//        TODO create settings frames
+        createSettingsFrame();
     }
 
     public void createAuthFrame() {
@@ -215,10 +221,12 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
 
         scrollUsers.setPreferredSize(new Dimension(100, 0));
 
-        cbAlwaysOnTop.addActionListener(this);
+        cbSettingsAlwaysOnTop.addActionListener(this);
         btnSend.addActionListener(this);
         tfMessage.addActionListener(this);
         btnDisconnect.addActionListener(this);
+        btnSettings.addActionListener(this);
+
         userList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -227,9 +235,10 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             }
         });
 
-        panelBottom.add(btnDisconnect, BorderLayout.WEST);
-        panelBottom.add(tfMessage, BorderLayout.CENTER);
-        panelBottom.add(btnSend, BorderLayout.EAST);
+        panelBottom.add(tfMessage);
+        panelBottom.add(btnSend);
+        panelBottom.add(btnDisconnect);
+        panelBottom.add(btnSettings);
 
         chatFrame.add(scrollLog, BorderLayout.CENTER);
         chatFrame.add(scrollUsers, BorderLayout.EAST);
@@ -238,11 +247,33 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         log.setEditable(false);
     }
 
+    private void createSettingsFrame() {
+        settingsFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        settingsFrame.setLocationRelativeTo(null);
+        settingsFrame.setSize(300, 200);
+        settingsFrame.setTitle("Settings");
+
+        cbSettingsVisionBroadcastMessage.setSelected(true);
+
+        btnSettingsCancel.addActionListener(this);
+        btnSettingsChangeNickname.addActionListener(this);
+
+        panelSettings.add(cbSettingsAlwaysOnTop);
+        panelSettings.add(cbSettingsVisionBroadcastMessage);
+        panelSettings.add(lSettingsNewNickname);
+        panelSettings.add(flSettingsNewNickname);
+        panelSettings.add(btnSettingsChangeNickname);
+        panelSettings.add(btnSettingsCancel);
+
+        settingsFrame.add(panelSettings);
+
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
-        if (source == cbAlwaysOnTop) {
-            chatFrame.setAlwaysOnTop(cbAlwaysOnTop.isSelected());
+        if (source == cbSettingsAlwaysOnTop) {
+            chatFrame.setAlwaysOnTop(cbSettingsAlwaysOnTop.isSelected());
         } else if (source == btnSend || source == tfMessage) {
             sendMessage();
         } else if (source == btnAuthLogin) {
@@ -250,9 +281,9 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
         } else if (source == btnDisconnect) {
             socketThread.close();
         } else if (source == btnAuthRegistration) {
-                hideAndVisibleFrames(authFrame, regFrame);
-                isRegisterProcess = true;
-                connect();
+            hideAndVisibleFrames(authFrame, regFrame);
+            isRegisterProcess = true;
+            connect();
         } else if (source == btnRegCreateAcc) {
             if (checkRegistryFields()) {
                 sendRegistrationMessage();
@@ -261,6 +292,14 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             socketThread.close();
             isRegisterProcess = false;
             hideAndVisibleFrames(regFrame, authFrame);
+        } else if (source == btnSettings) {
+            hideAndVisibleFrames(chatFrame, settingsFrame);
+        } else if (source == btnSettingsChangeNickname) {
+            if (checkEmptyNewNickname()){
+                sendChangeNicknameMessage();
+            }
+        } else if (source == btnSettingsCancel) {
+            hideAndVisibleFrames(settingsFrame, chatFrame);
         } else {
             throw new RuntimeException("Unknown source: " + source);
         }
@@ -295,7 +334,7 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             Socket socket = new Socket(tfAuthIPAddress.getText(), Integer.parseInt(tfAuthPort.getText()));
             socketThread = new SocketThread(this, "Client", socket);
         } catch (IOException e) {
-            if (e.getMessage().equals("Connection refused: connect")){
+            if (e.getMessage().equals("Connection refused: connect")) {
                 hideAndVisibleFrames(regFrame, authFrame);
                 showInfo(Thread.currentThread(), new Throwable("Server it's not run"));
             } else {
@@ -324,6 +363,10 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
                 Library.getRegistrationRequest(tfRegLogin.getText(), tfRegPass.getText().hashCode(), tfRegNick.getText()));
     }
 
+    private void sendChangeNicknameMessage() {
+        socketThread.sendMessage(Library.getChangeNicknameRequest(flSettingsNewNickname.getText()));
+    }
+
     private boolean checkRegistryFields() {
         if (tfRegLogin.getText().equals("") && tfRegPass.getText().equals("") && tfRegNick.getText().equals("")) {
             showInfo(Thread.currentThread(), new Throwable("Enter text in all fields"));
@@ -336,6 +379,18 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
             return false;
         }
         return true;
+    }
+
+    private boolean checkEmptyNewNickname() {
+        if (flSettingsNewNickname.getText().equals("")){
+            showInfo(Thread.currentThread(), new Throwable("Field 'new nickname' is empty"));
+            return false;
+        } else if (flSettingsNewNickname.getText().split(" ").length > 1){
+            showInfo(Thread.currentThread(), new Throwable("Field 'new nickname' isn't one word"));
+            return false;
+        }
+        return true;
+
     }
 
     private void putLog(String msg) {
@@ -443,7 +498,9 @@ public class ClientGUI implements ActionListener, Thread.UncaughtExceptionHandle
                 socketThread.close();
                 break;
             case Library.TYPE_BROADCAST:
-                putLog(DATE_FORMAT.format(Long.parseLong(arrMsg[1])) + " " + arrMsg[2] + ": " + arrMsg[3]);
+                if (cbSettingsVisionBroadcastMessage.isSelected()) {
+                    putLog(DATE_FORMAT.format(Long.parseLong(arrMsg[1])) + " " + arrMsg[2] + ": " + arrMsg[3]);
+                }
                 break;
             case Library.USER_LIST:
                 String users = msg.substring(Library.USER_LIST.length() +

@@ -8,12 +8,12 @@ public class Library {
     public static final String REGISTRATION_DENIED = "/reg_denied";
 
     public static final String CHANGE_PASSWORD_REQUEST = "/change_psw_request";
-    public static final String CHANGE_PASSWORD_ACCEPT = "/change_psw_request";
-    public static final String CHANGE_PASSWORD_DENIED = "/change_psw_request";
+    public static final String CHANGE_PASSWORD_ACCEPT = "/change_psw_accept";
+    public static final String CHANGE_PASSWORD_DENIED = "/change_psw_denied";
 
     public static final String CHANGE_NICKNAME_REQUEST = "/change_nick_request";
-    public static final String CHANGE_NICKNAME_ACCEPT = "/change_nick_request";
-    public static final String CHANGE_NICKNAME_DENIED = "/change_nick_request";
+    public static final String CHANGE_NICKNAME_ACCEPT = "/change_nick_accept";
+    public static final String CHANGE_NICKNAME_DENIED = "/change_nick_denied";
 
     public static final String AUTH_REQUEST = "/auth_request";
     public static final String AUTH_ACCEPT = "/auth_accept";
@@ -28,7 +28,6 @@ public class Library {
     public static final String USER_LIST = "/user_list";
 
     public static String getRegistrationRequest(String login, int password, String nickname){
-//        TODO password hash code
         return REGISTRATION_REQUEST + DELIMITER + login + DELIMITER + password + DELIMITER + nickname;
     }
 
@@ -52,6 +51,10 @@ public class Library {
         return AUTH_DENIED;
     }
 
+    public static String getChangeNicknameRequest(String newNickname){
+        return CHANGE_NICKNAME_REQUEST + DELIMITER + newNickname;
+    }
+
     public static String getUserList(String users) {
         return USER_LIST + DELIMITER + users;
     }
@@ -67,7 +70,6 @@ public class Library {
     public static String getTypePrivateMessage(String sender, String message) {
         return TYPE_PRIVATE_MESSAGE + DELIMITER + System.currentTimeMillis() + DELIMITER + sender + DELIMITER + message;
     }
-
 
     public static String getTypeBroadcastClient(String msg) {
         return TYPE_BROADCAST_CLIENT + DELIMITER + msg;
